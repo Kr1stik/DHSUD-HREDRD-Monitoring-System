@@ -61,6 +61,7 @@ class ProjectApplication(models.Model):
     street_brgy = models.CharField(max_length=255, null=True, blank=True, verbose_name="Street/Brgy")
 
     # Metadata
+    date_archived = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

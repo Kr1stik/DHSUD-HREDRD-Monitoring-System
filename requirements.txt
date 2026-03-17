@@ -2,4 +2,7 @@ psycopg2-binary
 django-import-export
 djangorestframework
 django-cors-headers
-Django
+Django==6.0.2
+python-dotenv
+whitenoise
+waitress

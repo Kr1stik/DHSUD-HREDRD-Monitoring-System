@@ -3,29 +3,38 @@ import axios from 'axios'
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 
+// 🌐 API CONFIGURATION
+const API_URL = '/api/applications/';
+
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = window.location.origin;
+
 // --- ICON COMPONENTS ---
-const NavDashboardIcon = () => (<svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>);
-const NavFolderIcon = () => (<svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>);
-const NavArchiveIcon = () => (<svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>);
-const EditIcon = () => (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>);
-const ArchiveIcon = () => (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>);
-const RestoreIcon = () => (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>);
-const TrashIcon = () => (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
-const SearchIcon = () => (<svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>);
-const ViewIcon = () => (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>);
+const NavDashboardIcon = () => (<svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>);
+const NavFolderIcon = () => (<svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>);
+const NavArchiveIcon = () => (<svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>);
+const NavAboutIcon = () => (<svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>);
+const HelpIcon = () => (<svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>);
+const EditIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>);
+const ArchiveIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>);
+const RestoreIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>);
+const TrashIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
+const SearchIcon = () => (<svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>);
+const BulkIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>);
+const PrinterIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>);
+const MenuIcon = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
+const CloseIcon = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
 
-// --- CONSTANTS & INITIAL LOCATION DATA ---
-const projTypeOptionsList = [
-  "OM Subd", "OM Condo", "MCH Subd", "MCH Condo", 
-  "EH Subd", "EH Condo", "SH Subd", "SH Condo", 
-  "MP", "COL/OS", "Commercial Condo", "Industrial Subd", 
-  "Commercial Subd", "Farmlot Subd"
-];
-
-const crlsOptionsList = [
-  "New LS", "New CR", "Amended LS", "Amended CR", 
-  "Replacement of LS", "Replacement of CR", "Compliance Entry Only"
-];
+// --- CONSTANTS & INITIAL DATA ---
+const initialOptions = {
+  projTypes: ["OM Subd", "OM Condo", "MCH Subd", "MCH Condo", "EH Subd", "EH Condo", "SH Subd", "SH Condo", "MP", "COL/OS", "Commercial Condo", "Industrial Subd", "Commercial Subd", "Farmlot Subd"],
+  appTypes: ["New Application", "Reactivated", "Replacement"],
+  statusOptions: ["Ongoing", "Approved", "Denied", "Endorsed to HREDRB"],
+  mainCompOptions: ["Main", "Compliance"],
+  crlsOptions: ["New LS", "New CR", "Amended LS", "Amended CR", "Replacement of LS", "Replacement of CR", "Compliance Entry Only"]
+};
 
 const initialNirLocations: Record<string, Record<string, string[]>> = {
   "Negros Occidental": {
@@ -36,7 +45,7 @@ const initialNirLocations: Record<string, Record<string, string[]>> = {
     "Calatrava": ["Agboy", "Alimango", "Ani-e", "Bagacay", "Bantayanon", "Buenavista", "Cabungahan", "Calampisawan", "Cambayobo", "Castellano", "Cruz", "Dolis", "Hilub-Ang", "Hinab-Ong", "Igmaya-an", "Ilaya", "Laga-an", "Lemery", "Lipat-on", "Lo-ok", "Ma-aslob", "Macasilao", "Mahilum", "Malanog", "Malatas", "Marcelo", "Menchaca", "Mina-utok", "Minapasuk", "Pantao", "Patun-an", "Pinocutan", "Poblacion", "Refugio", "San Isidro", "Suba", "Telong", "Tigbao", "Tigbon", "Winu-an"],
     "Candoni": ["Agboy", "Bangkaya", "Cabia-an", "Caningay", "Gatuslao", "Haba", "Payauan", "Poblacion East", "Poblacion West"],
     "Cauayan": ["Abaca", "Baclao", "Basak", "Bulata", "Caliling", "Camalanda-an", "Camindangan", "Elihan", "Guiljungan", "Inayawan", "Isio", "Linaon", "Lumbia", "Mambugsay", "Man-Uling", "Masaling", "Molobolo", "Poblacion", "Sura", "Talacdan", "Tambad", "Tiling", "Tomina", "Tuyom", "Yahong"],
-    "Enrique B. Magalona": ["Alacaygan", "Alicante", "Batea", "Canlusong", "Consing", "Cudangdang", "Damgo", "Gahit", "Latasan", "Madrigal", "Manta-angan", "Nanca", "Pasiano", "Poblacion I", "Poblacion II", "Poblacion III", "San Isidro", "San Jose", "Santo Niño", "Tabigue", "Tanza", "Tomongtong", "Tuburan"],
+    "Enrique B. Magalona": ["Alacaygan", "Alicante", "Batea", "Canlusong", "Consing", "Cudangdang", "Damgo", "Gahit", "Latasan", "Manta-angan", "Nanca", "Pasiano", "Poblacion I", "Poblacion II", "Poblacion III", "San Isidro", "San Jose", "Santo Niño", "Tabigue", "Tanza", "Tomongtong", "Tuburan"],
     "Escalante City": ["Alimango", "Balintawak", "Binaguiohan", "Buenavista", "Cervantes", "Dian-ay", "Hacienda Fe", "Japitan", "Jonobjonob", "Langub", "Libertad", "Mabini", "Magsaysay", "Malasibog", "Old Poblacion", "Paitan", "Pinapugasan", "Rizal", "Tamlang", "Udtongan", "Washington"],
     "Himamaylan City": ["Aguisan", "Barangay I (Pob.)", "Barangay II (Pob.)", "Barangay III (Pob.)", "Barangay IV (Pob.)", "Buenavista", "Cabadiangan", "Cabanbanan", "Carabalan", "Libacao", "Mahalang", "Mambagaton", "Nabali-an", "San Antonio", "Saraet", "Su-ay", "Talaban", "To-oy"],
     "Hinigaran": ["Anahaw", "Aranda", "Baga-as", "Barangay I (Pob.)", "Barangay II (Pob.)", "Barangay III (Pob.)", "Barangay IV (Pob.)", "Bato", "Camba-og", "Candumarao", "Gargato", "Himaya", "Miranda", "Nanunga", "Narra", "Palayog", "Paticui", "Pilar", "Quiwi", "Tagda", "Tulunan"],
@@ -50,7 +59,7 @@ const initialNirLocations: Record<string, Record<string, string[]>> = {
     "Moises Padilla": ["Barangay 1 (Pob.)", "Barangay 2 (Pob.)", "Barangay 3 (Pob.)", "Barangay 4 (Pob.)", "Barangay 5 (Pob.)", "Barangay 6 (Pob.)", "Barangay 7 (Pob.)", "Crossing Magallon", "Guinpana-an", "Inolingan", "Macagahay", "Magallon Cadre", "Montilla", "Odoc", "Quintin Salas"],
     "Murcia": ["Abo-abo", "Alegria", "Amayco", "Aning", "Blumentritt", "Buenavista", "Caliban", "Canlandog", "Cansilayan", "Damsite", "Iglau-an", "Lopez Jaena", "Minoyan", "Pandanon", "San Miguel", "Santa Cruz", "Santa Rosa", "Zone I (Pob.)", "Zone II (Pob.)", "Zone III (Pob.)", "Zone IV (Pob.)", "Zone V (Pob.)"],
     "Pontevedra": ["Antipolo", "Barangay I (Pob.)", "Barangay II (Pob.)", "Barangay III (Pob.)", "Buenavista", "Buenavista Rizal", "Burgos", "Cambarus", "Canroma", "Don Salvador Benedicto", "General Malvar", "Gomez", "M. H. Del Pilar", "Mabini", "Miranda", "Pandan", "Recreo", "San Isidro", "San Juan", "Zamora"],
-    "Pulupandan": ["Culo", "Mabini", "Mabuhay", "Palaka Norte", "Palaka Sur", "Pating", "Tagda", "Tapadlan", "Ubay", "Utod", "Zone 1", "Zone 1-A", "Zone 2", "Zone 3", "Zone 4", "Zone 4-A", "Zone 5", "Zone 6", "Zone 7"],
+    "Pulupandan": ["Culo", "Mabini", "Mabuhay", "Palaka Norte", "Palaka Sur", "Pating", "Tagda", "Tapadlan", "Ubay", "Zone 1", "Zone 1-A", "Zone 2", "Zone 3", "Zone 4", "Zone 4-A", "Zone 5", "Zone 6", "Zone 7"],
     "Sagay City": ["Andres Bonifacio", "Bato", "Baviera", "Bulanon", "Campo Himoga-an", "Colonia Divina", "Fabrica", "General Luna", "Himoga-an Baybay", "Lopez Jaena", "Malubon", "Maquiling", "Molocaboc", "Old Sagay", "Paraiso", "Plaridel", "Poblacion 1", "Poblacion 2", "Poblacion 3", "Poblacion 4", "Rizal", "Taba-ao", "Tadlong", "Vito"],
     "Salvador Benedicto": ["Bago", "Bunga", "Igwakang", "Kumaliskis", "Nayon", "Pandanon", "Pinowayan"],
     "San Carlos City": ["Bagonbon", "Barangay 1 (Pob.)", "Barangay 2 (Pob.)", "Barangay 3 (Pob.)", "Barangay 4 (Pob.)", "Barangay 5 (Pob.)", "Barangay 6 (Pob.)", "Buluangan", "Codcod", "Ermita", "Guadalupe", "Nataban", "Palampas", "Prosperidad", "Punao", "Quezon", "Rizal", "San Juan"],
@@ -97,331 +106,555 @@ interface Application {
   mun_city: string;
   street_brgy: string;
   crls_options?: string[];
+  date_archived?: string | null;
 }
 
 // ==========================================
-// 🚀 NEW: ISOLATED PROJECT FORM MODAL
-// Moving this here completely stops input lag!
+// 🚀 CONSOLIDATED PROJECT MODAL
 // ==========================================
 const ProjectFormModal = ({ 
   appToEdit, 
   onClose, 
   onSave, 
   showNotification, 
-  requestConfirm 
+  requestConfirm,
+  handleExport
 }: { 
   appToEdit: Application | null, 
   onClose: () => void, 
   onSave: () => void,
   showNotification: any,
-  requestConfirm: any
+  requestConfirm: any,
+  handleExport: (format: 'xlsx' | 'csv') => void
 }) => {
   
+  const [activeTab, setActiveTab] = useState<'form' | 'import'>(appToEdit ? 'form' : 'form');
+  const [isDragging, setIsDragging] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
   const emptyForm = {
-    name_of_proj: '', proj_owner_dev: '', status_of_application: 'Ongoing', type_of_application: 'New Application', cr_no: '', ls_no: '', proj_type: '', main_or_compliance: 'Main', date_filed: '', date_issued: '', date_completion: '', prov: '', mun_city: '', street_brgy: '', crls_options: [] as string[]
+    name_of_proj: '', proj_owner_dev: '', status_of_application: 'Ongoing', type_of_application: 'New Application', 
+    cr_nos: [''], ls_nos: [''],
+    proj_type: '', main_or_compliance: 'Main', date_filed: '', date_issued: '', date_completion: '', prov: '', mun_city: '', street_brgy: '', crls_options: [] as string[]
   };
 
-  const [formData, setFormData] = useState(appToEdit || emptyForm);
+  const [formData, setFormData] = useState(() => {
+    if (appToEdit) {
+      return {
+        ...appToEdit,
+        cr_nos: appToEdit.cr_no ? appToEdit.cr_no.split(', ') : [''],
+        ls_nos: appToEdit.ls_no ? appToEdit.ls_no.split(', ') : ['']
+      }
+    }
+    return emptyForm;
+  });
 
   const [locationDB, setLocationDB] = useState<Record<string, Record<string, string[]>>>(() => {
     const saved = localStorage.getItem('dhsud_custom_locations');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed["Negros Occidental"] && parsed["Negros Occidental"]["Bacolod City"]) {
-        const existingBacolod = parsed["Negros Occidental"]["Bacolod City"];
-        const newBacolod = initialNirLocations["Negros Occidental"]["Bacolod City"];
-        parsed["Negros Occidental"]["Bacolod City"] = Array.from(new Set([...existingBacolod, ...newBacolod])).sort();
-      }
-      return parsed;
-    }
-    return initialNirLocations;
+    return saved ? JSON.parse(saved) : initialNirLocations;
+  });
+
+  const [formOptions, setFormOptions] = useState(() => {
+    const saved = localStorage.getItem('dhsud_custom_options');
+    return saved ? JSON.parse(saved) : initialOptions;
   });
 
   const [promptDialog, setPromptDialog] = useState({ show: false, title: '', message: '', placeholder: '', action: null as any });
   const [promptValue, setPromptValue] = useState('');
 
   useEffect(() => { localStorage.setItem('dhsud_custom_locations', JSON.stringify(locationDB)); }, [locationDB]);
+  useEffect(() => { localStorage.setItem('dhsud_custom_options', JSON.stringify(formOptions)); }, [formOptions]);
 
   const availableProvinces = Object.keys(locationDB);
   const availableCities = formData.prov ? Object.keys(locationDB[formData.prov] || {}).sort() : [];
   const availableBarangays = (formData.prov && formData.mun_city) ? (locationDB[formData.prov][formData.mun_city] || []).sort() : [];
 
-  const handleAddCity = () => {
-    if (!formData.prov) return;
-    setPromptValue(''); 
+  const handleAddOption = (category: string, title: string) => {
+    setPromptValue('');
     setPromptDialog({
-      show: true, title: 'Add Municipality / City', message: `Add a new city or municipality to the list for ${formData.prov}.`, placeholder: 'e.g. Talisay City',
-      action: (newCity: string) => {
-        if (newCity && newCity.trim() !== '') {
-          const cleanCity = newCity.trim();
-          if (!locationDB[formData.prov][cleanCity]) {
-            setLocationDB(prev => ({ ...prev, [formData.prov]: { ...prev[formData.prov], [cleanCity]: [] } }));
-            setFormData(prev => ({ ...prev, mun_city: cleanCity, street_brgy: '' }));
-            showNotification(`Added ${cleanCity} to the list!`, "success");
-          } else {
-            showNotification(`${cleanCity} already exists.`, "info");
+      show: true, title: `Add ${title}`, message: `Add a new custom option for ${title}.`, placeholder: `e.g. New ${title}`,
+      action: (newVal: string) => {
+        if (newVal && newVal.trim() !== '') {
+          const cleanVal = newVal.trim();
+          if (!formOptions[category as keyof typeof formOptions].includes(cleanVal)) {
+            setFormOptions((prev: any) => ({ ...prev, [category]: [...prev[category as keyof typeof formOptions], cleanVal] }));
+            showNotification(`Added ${cleanVal}!`, "success");
           }
         }
       }
     });
-  }
+  };
 
-  const handleDeleteCity = () => {
-    if (!formData.prov || !formData.mun_city) return;
-    requestConfirm("Delete City", `Are you sure you want to permanently delete '${formData.mun_city}' from ${formData.prov}?`, () => {
-      setLocationDB(prev => { const updatedProv = { ...prev[formData.prov] }; delete updatedProv[formData.mun_city]; return { ...prev, [formData.prov]: updatedProv }; });
-      setFormData(prev => ({ ...prev, mun_city: '', street_brgy: '' }));
-      showNotification(`Deleted ${formData.mun_city}.`, "success");
-    }, "Delete City", "bg-red-600 hover:bg-red-700");
-  }
-
-  const handleAddBrgy = () => {
-    if (!formData.prov || !formData.mun_city) return;
-    setPromptValue(''); 
-    setPromptDialog({
-      show: true, title: 'Add Barangay', message: `Add a new barangay to the list for ${formData.mun_city}.`, placeholder: 'e.g. Zone 1',
-      action: (newBrgy: string) => {
-        if (newBrgy && newBrgy.trim() !== '') {
-          const cleanBrgy = newBrgy.trim();
-          if (!locationDB[formData.prov][formData.mun_city].includes(cleanBrgy)) {
-            setLocationDB(prev => ({ ...prev, [formData.prov]: { ...prev[formData.prov], [formData.mun_city]: [...prev[formData.prov][formData.mun_city], cleanBrgy].sort() } }));
-            setFormData(prev => ({ ...prev, street_brgy: cleanBrgy }));
-            showNotification(`Added ${cleanBrgy} to the list!`, "success");
-          } else {
-            showNotification(`${cleanBrgy} already exists.`, "info");
+  const handleDeleteOption = (category: string, title: string, targetValue: string, formField: string) => {
+    if (!targetValue) return;
+    requestConfirm("Delete Option", `Are you sure you want to permanently delete '${targetValue}' from ${title} options?`, () => {
+      setFormOptions((prev: any) => ({ ...prev, [category]: prev[category].filter((item: string) => item !== targetValue) }));
+      if (formField) {
+          if (formField === 'crls_options') {
+              setFormData(prev => ({ ...prev, crls_options: (prev.crls_options || []).filter(item => item !== targetValue) }));
+          } else if ((formData as any)[formField] === targetValue) {
+              setFormData(prev => ({ ...prev, [formField]: '' }));
           }
-        }
+      }
+      showNotification(`Deleted ${targetValue}.`, "success");
+    }, "Delete Option", "bg-red-600 hover:bg-red-700");
+  };
+
+  const handleAddLocation = (type: 'Province' | 'City' | 'Barangay') => {
+    setPromptValue('');
+    let title = type;
+    let message = `Add a new ${type}.`;
+    
+    if (type === 'City' && !formData.prov) { showNotification("Select a Province first", "error"); return; }
+    if (type === 'Barangay' && !formData.mun_city) { showNotification("Select a City first", "error"); return; }
+
+    setPromptDialog({
+      show: true, title: `Add ${title}`, message, placeholder: `Enter ${type} name`,
+      action: (newVal: string) => {
+        if (!newVal || newVal.trim() === '') return;
+        const clean = newVal.trim();
+        setLocationDB(prev => {
+          const next = { ...prev };
+          if (type === 'Province') { if (!next[clean]) next[clean] = {}; }
+          else if (type === 'City') { if (!next[formData.prov][clean]) next[formData.prov][clean] = []; }
+          else if (type === 'Barangay') { if (!next[formData.prov][formData.mun_city].includes(clean)) next[formData.prov][formData.mun_city].push(clean); }
+          return next;
+        });
+        showNotification(`Added ${clean}`, "success");
       }
     });
-  }
+  };
 
-  const handleDeleteBrgy = () => {
-    if (!formData.prov || !formData.mun_city || !formData.street_brgy) return;
-    requestConfirm("Delete Barangay", `Are you sure you want to permanently delete '${formData.street_brgy}' from ${formData.mun_city}?`, () => {
-      setLocationDB(prev => ({ ...prev, [formData.prov]: { ...prev[formData.prov], [formData.mun_city]: prev[formData.prov][formData.mun_city].filter(b => b !== formData.street_brgy) } }));
-      setFormData(prev => ({ ...prev, street_brgy: '' }));
-      showNotification(`Deleted ${formData.street_brgy}.`, "success");
-    }, "Delete Barangay", "bg-red-600 hover:bg-red-700");
-  }
+  const handleDeleteLocation = (type: 'Province' | 'City' | 'Barangay', value: string) => {
+    if (!value) return;
+    requestConfirm(`Delete ${type}`, `Permanently delete '${value}'?`, () => {
+      setLocationDB(prev => {
+        const next = { ...prev };
+        if (type === 'Province') { delete next[value]; setFormData(p => ({...p, prov: '', mun_city: '', street_brgy: ''})); }
+        else if (type === 'City') { delete next[formData.prov][value]; setFormData(p => ({...p, mun_city: '', street_brgy: ''})); }
+        else if (type === 'Barangay') { next[formData.prov][formData.mun_city] = next[formData.prov][formData.mun_city].filter(b => b !== value); setFormData(p => ({...p, street_brgy: ''})); }
+        return next;
+      });
+      showNotification(`Deleted ${value}`, "success");
+    }, "Delete", "bg-red-600");
+  };
 
-  const handleNumericDashInput = (e: React.ChangeEvent<HTMLInputElement>, field: 'cr_no' | 'ls_no') => {
-    const value = e.target.value.replace(/[^0-9-]/g, '');
-    setFormData({ ...formData, [field]: value });
+  const handleArrayInput = (index: number, value: string, field: 'cr_nos' | 'ls_nos') => {
+    const cleanValue = value.replace(/[^a-zA-Z0-9-\s]/g, ''); 
+    setFormData(prev => {
+      const newArr = [...prev[field]];
+      newArr[index] = cleanValue;
+      return { ...prev, [field]: newArr };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const payload: any = { 
       ...formData,
+      cr_no: formData.cr_nos.filter((v: string) => v.trim() !== '').join(', '),
+      ls_no: formData.ls_nos.filter((v: string) => v.trim() !== '').join(', '),
       date_filed: formData.date_filed === '' ? null : formData.date_filed,
       date_issued: formData.date_issued === '' ? null : formData.date_issued,
       date_completion: formData.date_completion === '' ? null : formData.date_completion,
     }
-
-    const apiCall = appToEdit ? axios.patch(`http://127.0.0.1:8000/api/applications/${appToEdit.id}/`, payload) : axios.post('http://127.0.0.1:8000/api/applications/', payload);
-
+    delete payload.cr_nos; delete payload.ls_nos;
+    const apiCall = appToEdit ? axios.patch(`${API_URL}${appToEdit.id}/`, payload) : axios.post(API_URL, payload);
     apiCall.then(() => {
-        showNotification(appToEdit ? "Project updated successfully" : "New project created successfully", "success");
-        onSave(); // Triggers table refresh and closes modal
+        showNotification(appToEdit ? "Project updated" : "Project created", "success");
+        onSave();
       })
-      .catch(err => showNotification("Action failed! Check server connection.", "error"));
+      .catch(() => showNotification("Action failed!", "error"));
   }
+
+  const processImportFile = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const data = evt.target?.result;
+        const wb = XLSX.read(data, { type: 'array' }); 
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const jsonData: any[] = XLSX.utils.sheet_to_json(ws);
+
+        if (jsonData.length === 0) {
+          showNotification("Upload Failed: File is empty.", "error");
+          return;
+        }
+
+        const validLocations = locationDB;
+        const validData = [];
+
+        for (const row of jsonData) {
+          const prov = row['Prov']?.trim();
+          const city = row['Mun/City']?.trim();
+          
+          if (validLocations[prov] && validLocations[prov][city]) {
+            validData.push(row);
+          }
+        }
+
+        if (validData.length === 0) {
+          showNotification(`Import Blocked: All rows are outside NIR or invalid format.`, "error");
+          return;
+        }
+
+        setPreviewData(validData);
+        showNotification(`Preview Ready: ${validData.length} valid records found.`, "info");
+      } catch (error) {
+        showNotification("Critical Error: Ensure file is a valid .csv or .xlsx", "error");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const confirmBulkUpload = async () => {
+    setIsUploading(true);
+    const batchSize = 10;
+    let successCount = 0;
+
+    for (let i = 0; i < previewData.length; i += batchSize) {
+      const batch = previewData.slice(i, i + batchSize);
+      await Promise.allSettled(batch.map(row => 
+        axios.post(API_URL, {
+          name_of_proj: row['Name of Proj'] || row['Project Name'] || 'Untitled',
+          proj_owner_dev: row['Proj Owner Dev'] || '',
+          proj_type: row['Proj Type'] || '',
+          type_of_application: row['Type of Application'] || 'New Application',
+          status_of_application: row['Status of Application'] || 'Ongoing',
+          main_or_compliance: row['Main or Compliance'] || 'Main',
+          prov: row['Prov'] || '',
+          mun_city: row['Mun/City'] || '',
+          street_brgy: row['Street/Brgy'] || '',
+          cr_no: row['CR No.'] || '',
+          ls_no: row['LS No.'] || '',
+          crls_options: row['New or Amended CRLS'] ? String(row['New or Amended CRLS']).split(',').map(s => s.trim()) : []
+        })
+      )).then(results => {
+        successCount += results.filter(r => r.status === 'fulfilled').length;
+      });
+    }
+
+    setIsUploading(false);
+    showNotification(`Successfully saved ${successCount} records!`, "success");
+    onSave();
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setIsDragging(true);
+    else if (e.type === "dragleave") setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processImportFile(e.dataTransfer.files[0]);
+    }
+  };
 
   return (
     <>
-      <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-          <div className="px-7 py-5 border-b border-slate-200 flex justify-between items-center">
-            <h3 className="text-xl font-bold text-slate-800">{appToEdit ? 'Edit Project' : 'Add New Project'}</h3>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-lg transition-colors">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[100] animate-in fade-in duration-200">
+        <div className="bg-slate-100 rounded-[24px] sm:rounded-[28px] shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[94vh] flex flex-col overflow-hidden border border-slate-200">
+          
+          <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 flex flex-col gap-4 sm:gap-6 bg-white shadow-sm z-10">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">{appToEdit ? 'Update Project' : 'Project Management'}</h3>
+                <p className="text-slate-500 font-medium text-xs sm:text-sm mt-1">{appToEdit ? 'Modify details for ' + appToEdit.name_of_proj : 'Manual entry or bulk data processing'}</p>
+              </div>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-2xl transition-all">
+                <CloseIcon />
+              </button>
+            </div>
+
+            {!appToEdit && (
+              <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit">
+                <button onClick={() => {setActiveTab('form'); setPreviewData([]);}} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'form' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Manual Entry</button>
+                <button onClick={() => setActiveTab('import')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'import' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Bulk Import / Export</button>
+              </div>
+            )}
           </div>
           
-          <div className="overflow-y-auto p-7 bg-slate-50/50">
-            <form id="app-form" onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* TOP SECTION */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  Project Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Project Name *</label>
-                    <input required type="text" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
-                  </div>
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Owner / Developer</label>
-                    <input type="text" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={formData.proj_owner_dev} onChange={e => setFormData({...formData, proj_owner_dev: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Project Type</label>
-                    <select className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.proj_type} onChange={e => setFormData({...formData, proj_type: e.target.value})}>
-                      <option value="" disabled>Select Type...</option>
-                      {projTypeOptionsList.map((type) => (<option key={type} value={type}>{type}</option>))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Application Type</label>
-                    <select className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.type_of_application} onChange={e => setFormData({...formData, type_of_application: e.target.value})}>
-                      <option value="New Application">New Application</option><option value="Reactivated">Reactivated</option><option value="Replacement">Replacement</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Current Status</label>
-                    <select className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.status_of_application} onChange={e => setFormData({...formData, status_of_application: e.target.value})}>
-                      <option value="Ongoing">Ongoing</option><option value="Approved">Approved</option><option value="Denied">Denied</option><option value="Endorsed to HREDRB">Endorsed to HREDRB</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Main or Compliance</label>
-                    <select className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.main_or_compliance} onChange={e => setFormData({...formData, main_or_compliance: e.target.value})}>
-                      <option value="Main">Main</option><option value="Compliance">Compliance</option>
-                    </select>
+          <div className="flex-1 overflow-y-auto px-6 sm:px-8 pb-8 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent mt-4">
+            {activeTab === 'form' ? (
+              <form id="app-form" onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
+                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Project Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="col-span-1 md:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Project Name *</label>
+                      <input required className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 text-base font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
+                    </div>
+                    <div className="col-span-1 md:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Owner / Developer</label>
+                      <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.proj_owner_dev} onChange={e => setFormData({...formData, proj_owner_dev: e.target.value})} />
+                    </div>
+                    <div className="space-y-2 relative">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Project Type</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddOption('projTypes', 'Project Type')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.proj_type && <button type="button" onClick={() => handleDeleteOption('projTypes', 'Project Type', formData.proj_type, 'proj_type')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.proj_type} onChange={e => setFormData({...formData, proj_type: e.target.value})}>
+                        <option value="" disabled>Select Type...</option>
+                        {formOptions.projTypes.map((type: string) => (<option key={type} value={type}>{type}</option>))}
+                      </select>
+                    </div>
+                    <div className="space-y-2 relative">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Application Type</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddOption('appTypes', 'Application Type')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.type_of_application && <button type="button" onClick={() => handleDeleteOption('appTypes', 'Application Type', formData.type_of_application, 'type_of_application')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.type_of_application} onChange={e => setFormData({...formData, type_of_application: e.target.value})}>
+                        {formOptions.appTypes.map((type: string) => (<option key={type} value={type}>{type}</option>))}
+                      </select>
+                    </div>
+                    <div className="space-y-2 relative">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Status</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddOption('statusOptions', 'Status')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.status_of_application && <button type="button" onClick={() => handleDeleteOption('statusOptions', 'Status', formData.status_of_application, 'status_of_application')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.status_of_application} onChange={e => setFormData({...formData, status_of_application: e.target.value})}>
+                        <option value="" disabled>Select Status...</option>
+                        {formOptions.statusOptions.map((status: string) => (<option key={status} value={status}>{status}</option>))}
+                      </select>
+                    </div>
+                    <div className="space-y-2 relative">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Main or Compliance</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddOption('mainCompOptions', 'Category')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.main_or_compliance && <button type="button" onClick={() => handleDeleteOption('mainCompOptions', 'Category', formData.main_or_compliance, 'main_or_compliance')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.main_or_compliance} onChange={e => setFormData({...formData, main_or_compliance: e.target.value})}>
+                        <option value="" disabled>Select Category...</option>
+                        {formOptions.mainCompOptions.map((opt: string) => (<option key={opt} value={opt}>{opt}</option>))}
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* MID SECTION */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                  Certifications
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {crlsOptionsList.map((option) => (
-                    <label key={option} className="flex items-center space-x-3 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer transition-all">
-                      <input type="checkbox" className="w-4.5 h-4.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500" value={option} checked={formData.crls_options?.includes(option) || false}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          setFormData(prev => ({
-                            ...prev, crls_options: isChecked ? [...(prev.crls_options || []), option] : (prev.crls_options || []).filter(item => item !== option)
-                          }));
-                        }}
-                      />
-                      <span className="text-slate-700 font-medium text-sm">{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="flex flex-col relative group">
-                    <div className="h-5 mb-2 flex justify-between items-center">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">CR No.</label>
-                    </div>
-                    <input type="text" placeholder="0000-00-000" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={formData.cr_no} onChange={(e) => handleNumericDashInput(e, 'cr_no')} />
+                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-5">
+                    <h4 className="text-base font-black text-slate-800 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                      Certifications
+                    </h4>
+                    <button type="button" onClick={() => handleAddOption('crlsOptions', 'Certification')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg">+ Add Option</button>
                   </div>
-                  <div className="flex flex-col relative group">
-                    <div className="h-5 mb-2 flex justify-between items-center">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">LS No.</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    {formOptions.crlsOptions.map((option: string) => (
+                      <div key={option} className="flex items-center justify-between p-3 rounded-2xl border-2 border-slate-200 bg-slate-100 hover:border-blue-200 hover:bg-white transition-all group">
+                        <label className="flex items-center space-x-3 cursor-pointer w-full">
+                          <input type="checkbox" className="w-5 h-5 text-blue-600 rounded-lg border-slate-300 focus:ring-blue-500" checked={formData.crls_options?.includes(option) || false}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              setFormData(prev => ({
+                                ...prev, crls_options: isChecked ? [...(prev.crls_options || []), option] : (prev.crls_options || []).filter(item => item !== option)
+                              }));
+                            }}
+                          />
+                          <span className="text-slate-700 font-bold text-sm">{option}</span>
+                        </label>
+                        <button type="button" onClick={() => handleDeleteOption('crlsOptions', 'Certification', option, 'crls_options')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− (Del)</button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CR No.</label>
+                        <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: [...p.cr_nos, '']}))} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+ Add New</button>
+                      </div>
+                      {formData.cr_nos.map((val: string, i: number) => (
+                        <div key={i} className="flex gap-2">
+                          <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'cr_nos')} />
+                          {formData.cr_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: p.cr_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 px-3 hover:bg-red-50 rounded-xl transition-colors font-black">−</button>}
+                        </div>
+                      ))}
                     </div>
-                    <input type="text" placeholder="0000-00-000" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" value={formData.ls_no} onChange={(e) => handleNumericDashInput(e, 'ls_no')} />
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">LS No.</label>
+                        <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: [...p.ls_nos, '']}))} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+ Add New</button>
+                      </div>
+                      {formData.ls_nos.map((val: string, i: number) => (
+                        <div key={i} className="flex gap-2">
+                          <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'ls_nos')} />
+                          {formData.ls_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: p.ls_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 px-3 hover:bg-red-50 rounded-xl transition-colors font-black">−</button>}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* LOCATION SECTION */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  Location Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="flex flex-col relative">
-                    <div className="h-5 mb-2 flex items-center">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Province</label>
+                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
+                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Location Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Province</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddLocation('Province')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.prov && <button type="button" onClick={() => handleDeleteLocation('Province', formData.prov)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select required className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.prov} onChange={e => setFormData({...formData, prov: e.target.value, mun_city: '', street_brgy: ''})}>
+                        <option value="" disabled>Select Province...</option>
+                        {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
                     </div>
-                    <select required className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" 
-                      value={formData.prov} onChange={e => setFormData({...formData, prov: e.target.value, mun_city: '', street_brgy: ''})}
-                    >
-                      <option value="" disabled>Select Province...</option>
-                      {availableProvinces.map(prov => (<option key={prov} value={prov}>{prov}</option>))}
-                    </select>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Municipality / City</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddLocation('City')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.mun_city && <button type="button" onClick={() => handleDeleteLocation('City', formData.mun_city)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select required disabled={!formData.prov} className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer disabled:opacity-50 text-slate-700" value={formData.mun_city} onChange={e => setFormData({...formData, mun_city: e.target.value, street_brgy: ''})}>
+                        <option value="" disabled>Select City/Mun...</option>
+                        {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center pr-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Barangay</label>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleAddLocation('Barangay')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
+                          {formData.street_brgy && <button type="button" onClick={() => handleDeleteLocation('Barangay', formData.street_brgy)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                        </div>
+                      </div>
+                      <select required disabled={!formData.mun_city} className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer disabled:opacity-50 text-slate-700" value={formData.street_brgy} onChange={e => setFormData({...formData, street_brgy: e.target.value})}>
+                        <option value="" disabled>Select Barangay...</option>
+                        {availableBarangays.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex flex-col relative">
-                    <div className="h-5 mb-2 flex items-center">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Municipality / City</label>
-                      <div className="absolute right-0 top-0 flex gap-1 h-5 items-center">
-                        {formData.prov && (<button type="button" onClick={handleAddCity} className="whitespace-nowrap text-[10px] text-blue-600 hover:underline font-bold bg-blue-50 px-1.5 py-0.5 rounded">+ Add</button>)}
-                        {formData.mun_city && (<button type="button" onClick={handleDeleteCity} className="whitespace-nowrap text-[10px] text-red-500 hover:underline font-bold bg-red-50 px-1.5 py-0.5 rounded">− Del</button>)}
+                </div>
+
+                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
+                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Timelines
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Filed</label>
+                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_filed || ''} onChange={e => setFormData({...formData, date_filed: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Issued</label>
+                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_issued || ''} onChange={e => setFormData({...formData, date_issued: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Completion</label>
+                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_completion || ''} onChange={e => setFormData({...formData, date_completion: e.target.value})} />
+                    </div>
+                  </div>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-8 py-4 animate-in slide-in-from-bottom-4 duration-300">
+                {previewData.length > 0 ? (
+                  <div className="bg-white rounded-[20px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[65vh]">
+                    <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-black text-slate-800">Preview Data</h4>
+                        <p className="text-slate-500 text-sm font-medium mt-0.5">Found <span className="text-emerald-600 font-bold">{previewData.length} valid</span> records.</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => setPreviewData([])} className="px-4 py-2 text-slate-600 bg-white border border-slate-300 rounded-xl font-bold text-sm" disabled={isUploading}>Cancel</button>
+                        <button onClick={confirmBulkUpload} disabled={isUploading} className="px-4 py-2 bg-blue-600 text-white rounded-xl font-black text-sm">
+                          {isUploading ? 'Uploading...' : 'Confirm Upload'}
+                        </button>
                       </div>
                     </div>
-                    <select required disabled={!formData.prov} className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:text-slate-400" 
-                      value={formData.mun_city} onChange={e => setFormData({...formData, mun_city: e.target.value, street_brgy: ''})}
-                    >
-                      <option value="" disabled>Select City/Mun...</option>
-                      {availableCities.map(city => (<option key={city} value={city}>{city}</option>))}
-                    </select>
+                    <div className="flex-1 overflow-auto p-4">
+                      <table className="w-full text-left border-collapse text-sm">
+                        <thead className="bg-slate-50 sticky top-0">
+                          <tr>
+                            <th className="px-4 py-2 font-bold text-slate-600 border-b">Project Name</th>
+                            <th className="px-4 py-2 font-bold text-slate-600 border-b">Location</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {previewData.slice(0, 50).map((row, i) => (
+                            <tr key={i} className="hover:bg-slate-50/50">
+                              <td className="px-4 py-2 font-bold text-slate-800">{row['Name of Proj'] || 'Untitled'}</td>
+                              <td className="px-4 py-2 text-slate-600">{row['Mun/City']}, {row['Prov']}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div className="flex flex-col relative">
-                    <div className="h-5 mb-2 flex items-center">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Barangay</label>
-                      <div className="absolute right-0 top-0 flex gap-1 h-5 items-center">
-                        {formData.mun_city && (<button type="button" onClick={handleAddBrgy} className="whitespace-nowrap text-[10px] text-blue-600 hover:underline font-bold bg-blue-50 px-1.5 py-0.5 rounded">+ Add</button>)}
-                        {formData.street_brgy && (<button type="button" onClick={handleDeleteBrgy} className="whitespace-nowrap text-[10px] text-red-500 hover:underline font-bold bg-red-50 px-1.5 py-0.5 rounded">− Del</button>)}
+                ) : (
+                  <div className="space-y-6">
+                    <div onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop}
+                      className={`relative group h-[40vh] border-4 border-dashed rounded-[32px] transition-all flex flex-col items-center justify-center gap-5 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                    >
+                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".csv,.xlsx" onChange={(e) => { if(e.target.files && e.target.files[0]) processImportFile(e.target.files[0]); }} />
+                      <div className={`w-20 h-20 rounded-[24px] flex items-center justify-center transition-all ${isDragging ? 'bg-blue-500 text-white scale-110 shadow-xl' : 'bg-slate-100 text-slate-400 group-hover:text-blue-500'}`}>
+                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xl font-black text-slate-800">Upload Database</p>
+                        <p className="text-slate-500 font-medium text-sm mt-2">Drag and drop .csv or .xlsx file here</p>
                       </div>
                     </div>
-                    <select required disabled={!formData.mun_city || availableBarangays.length === 0} className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:text-slate-400" 
-                      value={formData.street_brgy} onChange={e => setFormData({...formData, street_brgy: e.target.value})}
-                    >
-                      <option value="" disabled>Select Barangay...</option>
-                      {availableBarangays.map(brgy => (<option key={brgy} value={brgy}>{brgy}</option>))}
-                    </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <button onClick={() => { handleExport('csv'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-3xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group shadow-sm">
+                        <svg className="w-8 h-8 mb-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <span className="font-black text-slate-800">Export as CSV</span>
+                      </button>
+                      <button onClick={() => { handleExport('xlsx'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-3xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group shadow-sm">
+                        <svg className="w-8 h-8 mb-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <span className="font-black text-slate-800">Export as Excel</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* DATES SECTION */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h4 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  Important Dates
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Date Filed</label>
-                    <input type="date" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.date_filed || ''} onChange={e => setFormData({...formData, date_filed: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Date Issued</label>
-                    <input type="date" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.date_issued || ''} onChange={e => setFormData({...formData, date_issued: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Date Completion</label>
-                    <input type="date" className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer" value={formData.date_completion || ''} onChange={e => setFormData({...formData, date_completion: e.target.value})} />
-                  </div>
-                </div>
-              </div>
-            </form>
+            )}
           </div>
           
-          <div className="px-7 py-5 border-t border-slate-200 bg-white flex justify-end gap-3 rounded-b-2xl">
-            <button type="button" onClick={onClose} className="px-6 py-2.5 text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors shadow-sm">Cancel</button>
-            <button type="submit" form="app-form" className="px-7 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors shadow-sm">
-              {appToEdit ? 'Save Changes' : 'Create Project'}
-            </button>
-          </div>
+          {activeTab === 'form' && (
+            <div className="px-6 sm:px-8 py-4 sm:py-6 border-t border-slate-200 bg-white flex justify-end gap-3 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+              <button onClick={onClose} className="px-6 py-3 text-slate-500 hover:text-slate-700 font-bold transition-colors text-sm sm:text-base">Discard</button>
+              <button type="submit" form="app-form" className="px-8 py-3 sm:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm sm:text-base">
+                {appToEdit ? 'Save Changes' : 'Confirm Entry'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Embedded Prompt Dialog */}
       {promptDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[80]">
-          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm p-8 relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => setPromptDialog({ ...promptDialog, show: false })} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl transition-all">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <div className="mx-auto mb-6 w-16 h-16 rounded-[20px] flex items-center justify-center bg-blue-50 text-blue-500">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-800 text-center mb-2">{promptDialog.title}</h3>
-            <p className="text-slate-500 text-sm leading-relaxed text-center mb-6 px-2">{promptDialog.message}</p>
-            <input type="text" autoFocus className="w-full mb-6 border border-slate-300 rounded-xl px-4 py-3 bg-white text-slate-800 font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm" placeholder={promptDialog.placeholder} value={promptValue} onChange={(e) => setPromptValue(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); promptDialog.action?.(promptValue); setPromptDialog({ ...promptDialog, show: false }); } }} />
-            <div className="flex flex-col gap-3">
-              <button onClick={() => { promptDialog.action?.(promptValue); setPromptDialog({ ...promptDialog, show: false }); }} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm">Add Location</button>
-              <button onClick={() => setPromptDialog({ ...promptDialog, show: false })} className="w-full py-3.5 text-slate-700 bg-white border-[1.5px] border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl font-semibold text-sm transition-all">Cancel</button>
-            </div>
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[120]">
+          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95">
+             <h3 className="text-xl font-black text-slate-800 text-center mb-6">{promptDialog.title}</h3>
+             <input autoFocus className="w-full mb-6 border-2 border-slate-100 rounded-2xl px-5 py-4 bg-slate-50 font-bold outline-none focus:border-blue-500" value={promptValue} onChange={(e) => setPromptValue(e.target.value)} />
+             <button onClick={() => { promptDialog.action?.(promptValue); setPromptDialog({ ...promptDialog, show: false }); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black">Save</button>
           </div>
         </div>
       )}
@@ -430,23 +663,117 @@ const ProjectFormModal = ({
 }
 
 // ==========================================
+// 🚀 PRINT REPORT MODAL
+// ==========================================
+const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () => void }) => {
+  const stats = {
+    approved: data.filter(a => a.status_of_application === 'Approved').length,
+    ongoing: data.filter(a => a.status_of_application === 'Ongoing').length,
+    endorsed: data.filter(a => a.status_of_application === 'Endorsed to HREDRB').length,
+    denied: data.filter(a => a.status_of_application === 'Denied').length,
+  };
+
+  return (
+    <div className="fixed inset-0 bg-white z-[200] overflow-y-auto p-8 print:absolute print:inset-0 print:bg-white print:z-[9999] print:block">
+      <style>{'@media print { @page { margin: 10mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }'}</style>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-start mb-8 print:hidden">
+          <button onClick={onClose} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all">Close Preview</button>
+          <button onClick={() => window.print()} className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2">
+            <PrinterIcon />
+            Print Document
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center gap-6 mb-8 border-b-4 border-slate-900 pb-6">
+          <img src="/static/trackerApp/DHSUD_LOGO.png" alt="Logo" className="w-20 h-20 object-contain" />
+          <div className="text-center">
+            <h2 className="text-xl font-black uppercase text-slate-800 leading-tight">Republic of the Philippines</h2>
+            <h1 className="text-2xl font-black uppercase text-slate-900 leading-tight">Department of Human Settlements and Urban Development</h1>
+            <h3 className="text-lg font-bold text-slate-600">Negros Island Region (NIR)</h3>
+          </div>
+        </div>
+
+        <div className="text-center mb-10">
+          <h4 className="text-2xl font-black text-slate-900 pt-2 underline decoration-4 underline-offset-8">Project Status & Accomplishment Report</h4>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-4">Date Generated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+        </div>
+
+        <div className="grid grid-cols-4 gap-4 mb-10">
+          {Object.entries(stats).map(([label, count]) => (
+            <div key={label} className="border-2 border-slate-900 p-4 rounded-2xl text-center bg-slate-50">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
+              <p className="text-2xl font-black text-slate-900">{count}</p>
+            </div>
+          ))}
+        </div>
+
+        <table className="w-full text-[11px] border-collapse border-2 border-slate-900">
+          <thead>
+            <tr className="bg-slate-900 text-white">
+              <th className="border border-slate-900 px-3 py-3 text-left font-black uppercase tracking-wider">Project Name</th>
+              <th className="border border-slate-900 px-3 py-3 text-left font-black uppercase tracking-wider">Location</th>
+              <th className="border border-slate-900 px-3 py-3 text-left font-black uppercase tracking-wider">Category</th>
+              <th className="border border-slate-900 px-3 py-3 text-left font-black uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((app, i) => (
+              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                <td className="border border-slate-300 px-3 py-2 font-black text-slate-900">{app.name_of_proj}</td>
+                <td className="border border-slate-300 px-3 py-2 font-bold text-slate-700">{app.mun_city}, {app.prov}</td>
+                <td className="border border-slate-300 px-3 py-2 font-bold text-slate-600">{app.main_or_compliance}</td>
+                <td className="border border-slate-300 px-3 py-2 font-black text-slate-900">{app.status_of_application}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="mt-16 grid grid-cols-2 gap-20">
+           <div className="text-center">
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-12">Prepared By:</p>
+              <div className="h-px bg-slate-900 w-64 mx-auto mb-1"></div>
+              <p className="text-xs font-black uppercase text-slate-900">Administrative Officer / Staff</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">HREDRD NIR</p>
+           </div>
+           <div className="text-center">
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-12">Approved By:</p>
+              <div className="h-px bg-slate-900 w-64 mx-auto mb-1"></div>
+              <p className="text-xs font-black uppercase text-slate-900">Regional Director</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">DHSUD NIR</p>
+           </div>
+        </div>
+
+        <div className="mt-20 border-t border-slate-200 pt-4 hidden print:block">
+           <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              <span>DHSUD-NIR-HREDRD-v1.0</span>
+              <span>Generated via Monitoring System | {new Date().toLocaleString()}</span>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
 // MAIN APP COMPONENT
 // ==========================================
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('All') 
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'about'>('dashboard')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   
-  // Modal states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [showHelp, setShowHelp] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingApp, setEditingApp] = useState<Application | null>(null)
   const [viewingApp, setViewingApp] = useState<Application | null>(null)
-  
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [isBulkMode, setIsBulkMode] = useState(false)
-  
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -464,28 +791,32 @@ export default function App() {
     setConfirmDialog({ show: true, title, message, action, confirmText, confirmColor });
   }
 
-  const fetchApplications = () => {
-    setIsLoading(true);
-    axios.get('http://127.0.0.1:8000/api/applications/')
-      .then(response => setApplications(response.data))
-      .catch(error => {
-        console.error("Error fetching data:", error);
+  const fetchApplications = (silent: boolean = false) => {
+    if (!silent) setIsLoading(true);
+    axios.get(API_URL)
+      .then(response => {
+        const data = response.data.results || response.data;
+        setApplications(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        setApplications([]);
         showNotification("Failed to load projects from server.", "error");
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => { if (!silent) setIsLoading(false); });
   }
 
-  useEffect(() => {
-    fetchApplications()
-  }, [])
+  useEffect(() => { fetchApplications() }, [])
 
   useEffect(() => {
     setSelectedIds([]);
     setIsBulkMode(false);
-  }, [currentView, searchTerm, filterStatus]);
+    setCurrentPage(1); 
+    setIsSidebarOpen(false); // Close sidebar on view change (mobile)
+  }, [currentView, searchTerm]);
 
-  const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
-  const archivedApps = applications.filter(app => app.status_of_application === 'Archived')
+  const appsArray = Array.isArray(applications) ? applications : [];
+  const activeApps = appsArray.filter(app => app.status_of_application !== 'Archived')
+  const archivedApps = appsArray.filter(app => app.status_of_application === 'Archived')
   const displayApps = currentView === 'active' ? activeApps : archivedApps
 
   const stats = {
@@ -510,21 +841,30 @@ export default function App() {
     return acc;
   }, {} as Record<string, number>);
 
-  const pieChartData = Object.keys(projTypeCounts)
+  const pieChartDataRaw = Object.keys(projTypeCounts)
     .map((key) => ({ name: key, value: projTypeCounts[key] }))
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value);
 
+  const top5 = pieChartDataRaw.slice(0, 5);
+  const others = pieChartDataRaw.slice(5);
+  const pieChartData = [...top5];
+  if (others.length > 0) {
+    const othersCount = others.reduce((acc, curr) => acc + curr.value, 0);
+    pieChartData.push({ name: 'Others', value: othersCount });
+  }
+
   const filteredApps = displayApps.filter(app => {
-    const matchesSearch = app.name_of_proj.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          app.mun_city.toLowerCase().includes(searchTerm.toLowerCase());
-    // Bypass the status filter entirely if we are in the archive view
-    const matchesStatus = currentView === 'archive' || filterStatus === 'All' || app.status_of_application === filterStatus;
-    return matchesSearch && matchesStatus;
+    return app.name_of_proj.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           app.mun_city.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+  const sortedApps = [...filteredApps].sort((a, b) => b.id - a.id); 
+  const totalPages = Math.ceil(sortedApps.length / itemsPerPage);
+  const paginatedApps = sortedApps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) setSelectedIds(filteredApps.map(app => app.id));
+    if (e.target.checked) setSelectedIds(paginatedApps.map(app => app.id));
     else setSelectedIds([]);
   };
 
@@ -532,372 +872,258 @@ export default function App() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
   };
 
-  const handleBulkAction = (action: 'archive' | 'restore' | 'delete') => {
-    if (selectedIds.length === 0) return;
-
-    let title = ''; let message = ''; let confirmText = ''; let confirmColor = ''; let apiCall: (id: number) => Promise<any>;
-
-    if (action === 'archive') {
-      title = 'Archive Selected'; message = `Are you sure you want to archive ${selectedIds.length} projects?`; confirmText = 'Archive All'; confirmColor = 'bg-orange-500 hover:bg-orange-600'; apiCall = (id) => axios.patch(`http://127.0.0.1:8000/api/applications/${id}/`, { status_of_application: 'Archived' });
-    } else if (action === 'restore') {
-      title = 'Restore Selected'; message = `Are you sure you want to restore ${selectedIds.length} projects to Active?`; confirmText = 'Restore All'; confirmColor = 'bg-emerald-600 hover:bg-emerald-700'; apiCall = (id) => axios.patch(`http://127.0.0.1:8000/api/applications/${id}/`, { status_of_application: 'Ongoing' });
-    } else {
-      title = 'Delete Selected'; message = `Are you sure you want to permanently delete ${selectedIds.length} projects? This action cannot be undone.`; confirmText = 'Delete All'; confirmColor = 'bg-red-600 hover:bg-red-700'; apiCall = (id) => axios.delete(`http://127.0.0.1:8000/api/applications/${id}/`);
-    }
-
-    requestConfirm(title, message, () => {
-      setIsLoading(true);
-      Promise.all(selectedIds.map(id => apiCall(id)))
-        .then(() => {
-          fetchApplications(); setSelectedIds([]); setIsBulkMode(false); 
-          showNotification(`Successfully processed ${selectedIds.length} projects.`, "success");
-        })
-        .catch(() => {
-          fetchApplications(); showNotification("Some operations failed. Please try again.", "error");
-        })
-        .finally(() => setIsLoading(false));
-    }, confirmText, confirmColor);
-  };
-
-  const handleExport = () => {
-    const dataToExport = filteredApps.map(app => ({
-      'Type of Application': app.type_of_application || '', 'Status of Application': app.status_of_application || '', 'New or Amended CRLS (Can choose many)': app.crls_options?.join(', ') || '', 'Main or Compliance': app.main_or_compliance || '', 'Date Filed': app.date_filed || '', 'Date Issued': app.date_issued || '', 'Date Completion': app.date_completion || '', 'CR No.': app.cr_no || '', 'LS No.': app.ls_no || '', 'Name of Proj': app.name_of_proj || '', 'Proj Owner Dev': app.proj_owner_dev || '', 'Prov': app.prov || '', 'Mun/City': app.mun_city || '', 'Street/Brgy': app.street_brgy || '', 'Proj Type': app.proj_type || ''
+  const handleExport = (format: 'xlsx' | 'csv') => {
+    const dataToExport = sortedApps.map(app => ({
+      'Type of Application': app.type_of_application || '', 'Status of Application': app.status_of_application || '', 'New or Amended CRLS': app.crls_options?.join(', ') || '', 'Main or Compliance': app.main_or_compliance || '', 'Date Filed': app.date_filed || '', 'Date Issued': app.date_issued || '', 'Date Completion': app.date_completion || '', 'CR No.': app.cr_no || '', 'LS No.': app.ls_no || '', 'Name of Proj': app.name_of_proj || '', 'Proj Owner Dev': app.proj_owner_dev || '', 'Prov': app.prov || '', 'Mun/City': app.mun_city || '', 'Street/Brgy': app.street_brgy || '', 'Proj Type': app.proj_type || ''
     }));
-
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Projects");
-    XLSX.writeFile(wb, `DHSUD_${currentView}_Export.xlsx`);
-    showNotification("Export successfully downloaded!", "success");
-  };
-
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const data = evt.target?.result;
-        const wb = XLSX.read(data, { type: 'array' }); 
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const jsonData: any[] = XLSX.utils.sheet_to_json(ws);
-
-        if (jsonData.length === 0) {
-          showNotification("The file appears to be empty.", "error"); return;
-        }
-
-        jsonData.forEach((row) => {
-          axios.post('http://127.0.0.1:8000/api/applications/', {
-            name_of_proj: row['Name of Proj'] || row['Project Name'] || 'Untitled Project', proj_owner_dev: row['Proj Owner Dev'] || '', proj_type: row['Proj Type'] || '', type_of_application: row['Type of Application'] || 'New Application', status_of_application: row['Status of Application'] || 'Ongoing', main_or_compliance: row['Main or Compliance'] || 'Main', prov: row['Prov'] || '', mun_city: row['Mun/City'] || '', street_brgy: row['Street/Brgy'] || '', cr_no: row['CR No.'] || row['CR No'] || '', ls_no: row['LS No.'] || row['LS No'] || '', crls_options: row['New or Amended CRLS (Can choose many)'] ? row['New or Amended CRLS (Can choose many)'].split(',').map((s: string) => s.trim()) : []
-          })
-          .then(() => fetchApplications())
-          .catch(err => console.error("Import error:", err));
-        });
-        showNotification(`Successfully imported ${jsonData.length} records!`, "success");
-      } catch (error) {
-        showNotification("Failed to read file. Please check the format.", "error");
-      }
-      e.target.value = ''; 
-    };
-    reader.readAsArrayBuffer(file);
+    XLSX.writeFile(wb, `DHSUD_Export.${format}`);
+    showNotification(`Exported as ${format.toUpperCase()}!`, "success");
   };
 
   const handleSoftDelete = (id: number) => {
-    requestConfirm("Archive Project", "Are you sure you want to move this project to the archives?", () => {
-      axios.patch(`http://127.0.0.1:8000/api/applications/${id}/`, { status_of_application: 'Archived' })
-        .then(() => { fetchApplications(); showNotification("Project successfully archived.", "success"); })
-        .catch(() => showNotification("Failed to archive project.", "error"));
-    }, "Archive Project", "bg-orange-500 hover:bg-orange-600");
+    requestConfirm("Archive Project", "Move this project to archives?", () => {
+      axios.patch(`${API_URL}${id}/`, { status_of_application: 'Archived', date_archived: new Date().toISOString() })
+        .then(() => { fetchApplications(true); showNotification("Archived.", "success"); })
+        .catch(() => showNotification("Failed.", "error"));
+    }, "Archive", "bg-orange-500");
   }
 
   const handleRestore = (id: number) => {
-    requestConfirm("Restore Project", "Do you want to restore this project back to the active list?", () => {
-      axios.patch(`http://127.0.0.1:8000/api/applications/${id}/`, { status_of_application: 'Ongoing' })
-        .then(() => { fetchApplications(); showNotification("Project successfully restored.", "success"); })
-        .catch(() => showNotification("Failed to restore project.", "error"));
-    }, "Restore Project", "bg-emerald-600 hover:bg-emerald-700");
+    requestConfirm("Restore Project", "Move back to active list?", () => {
+      axios.patch(`${API_URL}${id}/`, { status_of_application: 'Ongoing', date_archived: null })
+        .then(() => { fetchApplications(true); showNotification("Restored.", "success"); })
+        .catch(() => showNotification("Failed.", "error"));
+    }, "Restore", "bg-emerald-600");
   }
 
   const handleHardDelete = (id: number) => {
-    requestConfirm("Permanent Deletion", "Are you sure you want to permanently delete this project? This action cannot be undone.", () => {
-      axios.delete(`http://127.0.0.1:8000/api/applications/${id}/`)
-        .then(() => { fetchApplications(); showNotification("Project successfully deleted.", "success"); })
-        .catch(() => showNotification("Failed to delete project.", "error"));
-    }, "Delete Forever", "bg-red-600 hover:bg-red-700");
+    requestConfirm("Permanent Deletion", "This cannot be undone. Delete forever?", () => {
+      axios.delete(`${API_URL}${id}/`)
+        .then(() => { fetchApplications(true); showNotification("Deleted.", "success"); })
+        .catch(() => showNotification("Failed.", "error"));
+    }, "Delete", "bg-red-600");
   }
 
+  const getStatusBadge = (status: string) => {
+    let dotColor = 'bg-blue-500';
+    if (status === 'Approved') dotColor = 'bg-emerald-500';
+    if (status === 'Denied') dotColor = 'bg-red-500';
+    if (status === 'Endorsed to HREDRB') dotColor = 'bg-amber-500';
+    if (status === 'Archived') dotColor = 'bg-slate-400';
+    
+    return (
+      <div className="flex items-center gap-2">
+        <div className={`w-3 h-3 rounded-full shrink-0 shadow-sm ${dotColor}`}></div>
+        <span className="font-bold text-slate-700">{status}</span>
+      </div>
+    );
+  };
+
+  const [showChartModal, setShowChartModal] = useState<{show: boolean, title: string, data: any[]}>({show: false, title: '', data: []});
+
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 relative">
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 relative overflow-x-hidden">
       
-      {/* --- PREMIUM TOAST NOTIFICATION --- */}
+      {/* MOBILE HEADER */}
+      <header className="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <img src="/static/trackerApp/DHSUD_LOGO.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
+          <span className="font-black tracking-tight truncate text-lg">
+            {currentView === 'active' ? 'Projects' : currentView === 'archive' ? 'Archives' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+          </span>
+        </div>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-800 rounded-lg shrink-0">
+          {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
+        </button>
+      </header>
+
+      {/* TOAST NOTIFICATIONS ... */}
       {toast.show && (
-        <div className="fixed top-8 right-8 z-[100] min-w-[320px] max-w-md bg-white border border-slate-100 rounded-2xl shadow-2xl p-4 flex items-start gap-4 animate-in slide-in-from-top-8 fade-in duration-300">
-          <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-            toast.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 
-            toast.type === 'error' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
-          }`}>
-            {toast.type === 'success' && (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>)}
-            {toast.type === 'error' && (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>)}
-            {toast.type === 'info' && (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>)}
+        <div className="fixed top-20 md:top-8 right-4 md:right-8 z-[150] min-w-[280px] sm:min-w-[320px] max-w-md bg-white border border-slate-100 rounded-2xl shadow-2xl p-4 flex items-start gap-4 animate-in slide-in-from-top-8 fade-in">
+          <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+            {toast.type === 'success' ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6" /></svg>}
           </div>
           <div className="flex-1 pt-0.5">
-            <p className="text-sm font-bold text-slate-800">
-              {toast.type === 'success' ? 'Success!' : toast.type === 'error' ? 'Action Failed' : 'System Notice'}
-            </p>
-            <p className="text-xs font-medium text-slate-500 mt-0.5 leading-relaxed">{toast.message}</p>
-          </div>
-          <button onClick={() => setToast({ ...toast, show: false })} className="shrink-0 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-      )}
-
-      {/* --- CONFIRMATION DIALOG --- */}
-      {confirmDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[70]">
-          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm p-8 relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => setConfirmDialog({ ...confirmDialog, show: false })} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl transition-all">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <div className={`mx-auto mb-6 w-16 h-16 rounded-[20px] flex items-center justify-center ${confirmDialog.confirmColor.includes('red') ? 'bg-red-50 text-red-500' : confirmDialog.confirmColor.includes('orange') ? 'bg-orange-50 text-orange-500' : 'bg-emerald-50 text-emerald-500'}`}>
-              {confirmDialog.confirmColor.includes('emerald') ? (
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-              ) : (
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-              )}
-            </div>
-            <h3 className="text-2xl font-bold text-slate-800 text-center mb-3">{confirmDialog.title}</h3>
-            <p className="text-slate-500 text-sm leading-relaxed text-center mb-8 px-2">{confirmDialog.message}</p>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => { confirmDialog.action?.(); setConfirmDialog({ ...confirmDialog, show: false }); }} className={`w-full py-3.5 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm ${confirmDialog.confirmColor}`}>
-                {confirmDialog.confirmText}
-              </button>
-              <button onClick={() => setConfirmDialog({ ...confirmDialog, show: false })} className="w-full py-3.5 text-slate-700 bg-white border-[1.5px] border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl font-semibold text-sm transition-all">
-                Cancel
-              </button>
-            </div>
+            <p className="text-sm font-bold text-slate-800">{toast.type === 'success' ? 'Success' : 'Notice'}</p>
+            <p className="text-sm font-medium text-slate-500 leading-relaxed">{toast.message}</p>
           </div>
         </div>
       )}
 
-      {/* --- SIDEBAR NAVIGATION --- */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full shadow-md z-40">
+      {/* SIDEBAR NAVIGATION */}
+      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full shadow-2xl z-[60] transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <div className="shrink-0">
-            <img src="/DHSUD_LOGO.png" alt="DHSUD Logo" className="w-12 h-12 object-contain" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-wide leading-none">HREDRD</h2>
-            <p className="text-[10px] text-slate-400 font-medium leading-tight mt-1">
-              Housing & Real Estate Dev. <br/> Regulation Division
-            </p>
+          <img src="/static/trackerApp/DHSUD_LOGO.png" alt="Logo" className="w-10 h-10 object-contain shrink-0" />
+          <div className="overflow-hidden">
+            <h2 className="text-[10px] font-bold text-white uppercase tracking-widest leading-relaxed whitespace-normal">Housing and Real Estate Development Regulation Division</h2>
+            <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider truncate">Negros Island Region</p>
           </div>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-6">
-          <button onClick={() => setCurrentView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-sm font-medium ${currentView === 'dashboard' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800'}`}>
+        <nav className="flex-1 px-4 space-y-1.5 mt-6">
+          <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Overview</p>
+          <button onClick={() => setCurrentView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
             <NavDashboardIcon /> Dashboard
           </button>
-          <button onClick={() => setCurrentView('active')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-sm font-medium ${currentView === 'active' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800'}`}>
-            <NavFolderIcon /> Active Projects
+          <button onClick={() => setCurrentView('active')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'active' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavFolderIcon /> Projects
           </button>
-          <button onClick={() => setCurrentView('archive')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-sm font-medium ${currentView === 'archive' ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800'}`}>
+          
+          <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data Management</p>
+          <button onClick={() => setCurrentView('archive')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'archive' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
             <NavArchiveIcon /> Archives
           </button>
+          
+          <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">System & Info</p>
+          <button onClick={() => setCurrentView('about')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'about' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavAboutIcon /> About
+          </button>
         </nav>
+        <div className="p-4 border-t border-slate-800 mt-auto">
+          <button onClick={() => setShowHelp(true)} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+            <HelpIcon /> Help Guide
+          </button>
+        </div>
       </aside>
 
-      {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 p-8 ml-64 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+      {/* MAIN CONTENT AREA */}
+      <main className={`flex-1 p-4 sm:p-8 md:ml-64 mt-16 md:mt-0 transition-all duration-300 flex flex-col`}>
+        <div className="max-w-6xl mx-auto w-full">
+          
           {currentView === 'dashboard' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-800">System Dashboard</h1>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ongoing</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.ongoing}</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Approved</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.approved}</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500 hover:shadow-md transition-shadow">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Endorsed to HREDRB</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.endorsed}</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-red-500 hover:shadow-md transition-shadow">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Denied</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.denied}</p>
-                </div>
+            <div className="space-y-6 animate-in fade-in">
+              <h1 className="text-2xl font-bold text-slate-800">Analytics Overview</h1>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+                {[
+                  { label: 'Ongoing', val: stats.ongoing, color: 'blue' },
+                  { label: 'Approved', val: stats.approved, color: 'emerald' },
+                  { label: 'Endorsed', val: stats.endorsed, color: 'amber' },
+                  { label: 'Denied', val: stats.denied, color: 'red' }
+                ].map(s => (
+                  <div key={s.label} className={`bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-${s.color}-500`}>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.label}</p>
+                    <p className="text-2xl sm:text-4xl font-bold text-slate-800 mt-1">{s.val}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-                  <h3 className="text-lg font-bold text-slate-800 mb-6">Application Status Breakdown</h3>
-                  {isLoading ? (
-                    <div className="h-72 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div></div>
-                  ) : (
-                    <div className="h-72 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                          <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
-                          <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 600 }} />
-                          <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={60}>
-                            {chartData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800">Status Breakdown</h3>
+                    <button onClick={() => setShowChartModal({show: true, title: 'Application Status Breakdown', data: chartData})} className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-widest">Full Report</button>
+                  </div>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} />
+                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                        <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={45}>
+                          {chartData.map((d, i) => (<Cell key={i} fill={d.color} />))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-                  <h3 className="text-lg font-bold text-slate-800 mb-6">Projects by Type</h3>
-                  {isLoading ? (
-                    <div className="h-72 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div></div>
-                  ) : pieChartData.length === 0 ? (
-                    <div className="h-72 flex items-center justify-center text-slate-400 text-sm font-medium">No project data available yet.</div>
-                  ) : (
-                    <div className="h-72 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={pieChartData} cx="50%" cy="45%" innerRadius={75} outerRadius={105} paddingAngle={4} dataKey="value" stroke="none">
-                            {pieChartData.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
-                          </Pie>
-                          <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 600 }} formatter={(value: any, name: any): [string, string] => [`${value} Project${Number(value) > 1 ? 's' : ''}`, String(name)]} />
-                          <Legend verticalAlign="bottom" height={36} iconType="circle" formatter={(value) => <span className="text-slate-700 font-medium ml-1">{value}</span>} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800">Project Types</h3>
+                    <button onClick={() => setShowChartModal({show: true, title: 'All Project Types', data: pieChartDataRaw})} className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-widest">Full Report</button>
+                  </div>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieChartData} innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" stroke="none">
+                          {pieChartData.map((_, i) => (<Cell key={i} fill={COLORS[i % COLORS.length]} />))}
+                        </Pie>
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" formatter={(v) => <span className="text-xs font-medium text-slate-600">{v}</span>} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {(currentView === 'active' || currentView === 'archive') && (
-            <div className="animate-in fade-in duration-300">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-800">{currentView === 'active' ? 'Project Registry' : 'Archived Records'}</h1>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => { setIsBulkMode(!isBulkMode); if (isBulkMode) setSelectedIds([]); }} className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm border ${isBulkMode ? 'bg-slate-700 hover:bg-slate-800 text-white border-slate-700' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'}`}>
-                    {isBulkMode ? 'Cancel Selection' : 'Select Multiple'}
-                  </button>
-                  {currentView === 'active' && (
-                    <>
-                      <label className="cursor-pointer bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm">
-                        Import CSV <input type="file" className="hidden" accept=".xlsx, .csv" onChange={handleImport} />
-                      </label>
-                      <button onClick={handleExport} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm">
-                        Export Data
-                      </button>
-                      <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm">
-                        + Add New Project
-                      </button>
-                    </>
-                  )}
+            <div className="space-y-6 animate-in fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h1 className="text-2xl font-bold text-slate-800">{currentView === 'active' ? 'Project Registry' : 'Archives'}</h1>
+                <div className="flex items-center gap-2">
+                   <button onClick={() => setIsBulkMode(!isBulkMode)} className={`p-2.5 rounded-xl border transition-all ${isBulkMode ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 text-slate-600'}`}><BulkIcon /></button>
+                   <button onClick={() => setShowReport(true)} className="p-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all"><PrinterIcon /></button>
+                   {currentView === 'active' && (
+                     <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base">+ New Project</button>
+                   )}
                 </div>
               </div>
 
-              {selectedIds.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-5 flex justify-between items-center animate-in slide-in-from-top-2 shadow-sm">
-                  <span className="text-blue-800 font-bold text-sm px-2">{selectedIds.length} project{selectedIds.length > 1 ? 's' : ''} selected</span>
-                  <div className="flex gap-3">
-                    {currentView === 'active' && (<button onClick={() => handleBulkAction('archive')} className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">Archive Selected</button>)}
-                    {currentView === 'archive' && (
-                      <>
-                        <button onClick={() => handleBulkAction('restore')} className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">Restore Selected</button>
-                        <button onClick={() => handleBulkAction('delete')} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">Delete Selected</button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-4 mb-6">
+              <div className="flex gap-3">
                 <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><SearchIcon /></div>
-                  <input type="text" placeholder="Search projects or locations..." className="w-full pl-11 pr-5 py-3 rounded-xl border border-slate-300 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm font-medium transition-all shadow-sm placeholder:text-slate-400" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  <span className="absolute inset-y-0 left-4 flex items-center"><SearchIcon /></span>
+                  <input type="text" placeholder="Search projects..." className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
-                
-                {/* ONLY show the status dropdown if we are viewing Active Projects */}
-                {currentView === 'active' && (
-                  <select className="px-5 py-3 rounded-xl border border-slate-300 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm font-semibold text-slate-700 min-w-[180px] transition-all shadow-sm cursor-pointer" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                    <option value="All">All Statuses</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Denied">Denied</option>
-                    <option value="Endorsed to HREDRB">Endorsed to HREDRB</option>
-                  </select>
-                )}
               </div>
 
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-left border-collapse table-fixed">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      {isBulkMode && (<th className="px-6 py-4 w-[5%]"><input type="checkbox" className="w-4.5 h-4.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" checked={filteredApps.length > 0 && selectedIds.length === filteredApps.length} onChange={handleSelectAll} /></th>)}
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[30%]">Project Details</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[20%]">Location</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[15%]">Status</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[15%]">Certificates</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[15%] text-right">Actions</th>
+              <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden w-full max-w-full">
+                <table className="w-full md:min-w-[900px] text-left border-separate border-spacing-0">
+                  <thead className="hidden md:table-header-group">
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      {isBulkMode && <th className="px-6 py-4 w-12 border-b border-slate-200"><input type="checkbox" checked={paginatedApps.length > 0 && paginatedApps.every(a => selectedIds.includes(a.id))} onChange={handleSelectAll} /></th>}
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Project Info</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Location</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Status</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Certifications</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right border-b border-slate-200">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
                     {isLoading ? (
-                      <tr><td colSpan={isBulkMode ? 6 : 5} className="px-6 py-20 text-center"><div className="flex flex-col items-center justify-center space-y-4"><div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div><p className="text-slate-500 text-sm font-semibold animate-pulse">Fetching records...</p></div></td></tr>
-                    ) : filteredApps.length === 0 ? (
-                      <tr><td colSpan={isBulkMode ? 6 : 5} className="px-6 py-12 text-center text-slate-500 text-sm font-medium">No matching records found.</td></tr>
+                      <tr><td colSpan={6} className="px-6 py-20 text-center animate-pulse font-bold text-slate-400">Loading records...</td></tr>
+                    ) : paginatedApps.length === 0 ? (
+                      <tr><td colSpan={6} className="px-6 py-20 text-center font-bold text-slate-400">No results found.</td></tr>
                     ) : (
-                      filteredApps.map((app) => (
-                        <tr key={app.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(app.id) ? 'bg-blue-50/50' : ''}`}>
-                          {isBulkMode && (<td className="px-6 py-5"><input type="checkbox" className="w-4.5 h-4.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" checked={selectedIds.includes(app.id)} onChange={() => handleSelectRow(app.id)} /></td>)}
-                          <td className="px-6 py-5">
-                            <div 
-                              className="font-bold text-blue-600 hover:text-blue-800 cursor-pointer hover:underline text-base transition-colors"
-                              onClick={() => setViewingApp(app)}
-                              title="Click to view details"
-                            >
-                              {app.name_of_proj}
-                            </div>
-                            <div className="text-sm font-medium text-slate-500 mt-0.5">{app.proj_type} • {app.type_of_application}</div>
-                            {app.crls_options && app.crls_options.length > 0 && (<div className="text-xs font-semibold text-blue-600 mt-1.5 bg-blue-50 inline-block px-2 py-0.5 rounded-md">{app.crls_options.join(', ')}</div>)}
+                      paginatedApps.map(app => (
+                        <tr key={app.id} className="flex flex-col relative py-5 px-1 gap-1 md:table-row md:py-0 md:px-0 md:gap-0 md:hover:bg-slate-50 transition-colors group">
+                          {isBulkMode && <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => handleSelectRow(app.id)} /></td>}
+                          <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                            <button onClick={() => setViewingApp(app)} className="font-bold text-blue-600 text-lg hover:underline text-left block truncate max-w-[calc(100%-100px)] md:max-w-xs">{app.name_of_proj}</button>
+                            <span className="text-xs font-medium text-slate-400 mt-1 block uppercase tracking-tight">{app.proj_type}</span>
                           </td>
-                          <td className="px-6 py-5">
-                            <div className="text-sm font-bold text-slate-700">{app.mun_city}</div>
-                            <div className="text-sm font-medium text-slate-500">{app.prov}</div>
+                          <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                            <p className="font-medium text-slate-700">{app.mun_city}</p>
+                            <p className="text-xs font-medium text-slate-400">{app.prov}</p>
                           </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-2 whitespace-nowrap">
-                              <span className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${app.status_of_application === 'Archived' ? 'bg-slate-400' : app.status_of_application === 'Approved' ? 'bg-emerald-500' : app.status_of_application === 'Denied' ? 'bg-red-500' : app.status_of_application === 'Endorsed to HREDRB' ? 'bg-amber-500' : 'bg-blue-500'}`}></span>
-                              <span className="text-sm font-bold text-slate-700">{app.status_of_application}</span>
+                          <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                            {getStatusBadge(app.status_of_application)}
+                          </td>
+                          <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                            <div className="flex flex-col gap-1">
+                                {app.cr_no && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">CR: {app.cr_no}</span>}
+                                {app.ls_no && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">LS: {app.ls_no}</span>}
+                                {(!app.cr_no && !app.ls_no) && <span className="text-xs text-slate-300 italic font-medium">None</span>}
                             </div>
                           </td>
-                          <td className="px-6 py-5 text-slate-600 text-sm font-mono font-medium">CR: {app.cr_no || '-'}<br/>LS: {app.ls_no || '-'}</td>
-                          <td className="px-6 py-5 text-right space-x-2">
-                            {currentView === 'active' ? (
-                              <>
-                                <button title="View Details" onClick={() => setViewingApp(app)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all inline-flex"><ViewIcon /></button>
-                                <button title="Edit Project" onClick={() => { setEditingApp(app); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all inline-flex"><EditIcon /></button>
-                                <button title="Archive Project" onClick={() => handleSoftDelete(app.id)} className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all inline-flex"><ArchiveIcon /></button>
-                              </>
-                            ) : (
-                              <>
-                                <button title="View Details" onClick={() => setViewingApp(app)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all inline-flex"><ViewIcon /></button>
-                                <button title="Restore Project" onClick={() => handleRestore(app.id)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all inline-flex"><RestoreIcon /></button>
-                                <button title="Delete Forever" onClick={() => handleHardDelete(app.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all inline-flex"><TrashIcon /></button>
-                              </>
-                            )}
+                          <td className="absolute top-4 right-2 flex gap-1 bg-transparent md:relative md:top-auto md:right-auto md:table-cell md:px-6 md:py-5">
+                            <div className="flex justify-end gap-1">
+                              {currentView === 'active' ? (
+                                <>
+                                  <button onClick={() => {setEditingApp(app); setIsModalOpen(true);}} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><EditIcon /></button>
+                                  <button onClick={() => handleSoftDelete(app.id)} className="p-2 text-slate-400 hover:text-orange-600 transition-colors"><ArchiveIcon /></button>
+                                </>
+                              ) : (
+                                <>
+                                  <button onClick={() => handleRestore(app.id)} className="p-2 text-slate-400 hover:text-emerald-600 transition-colors"><RestoreIcon /></button>
+                                  <button onClick={() => handleHardDelete(app.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><TrashIcon /></button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -905,119 +1131,212 @@ export default function App() {
                   </tbody>
                 </table>
               </div>
+              
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Page {currentPage} of {totalPages}</span>
+                  <div className="flex gap-2">
+                    <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-2 border rounded-xl disabled:opacity-30 font-bold text-sm">Prev</button>
+                    <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-2 border rounded-xl disabled:opacity-30 font-bold text-sm">Next</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentView === 'about' && (
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 space-y-8 animate-in fade-in">
+              <h1 className="text-3xl font-black text-slate-800">About System</h1>
+              <div className="space-y-4 text-slate-500 leading-relaxed text-lg">
+                <p>The Housing and Real Estate Development Regulation Division (HREDRD) Monitoring System is a dedicated digital platform designed to streamline the tracking and management of project applications, Certificates of Registration (CR), and Licenses to Sell (LS).</p>
+                <p>Purpose-built for the Negros Island Region, the system ensures local data integrity and provides real-time analytics for regional administrators to monitor the progress of housing developments and compliance entries.</p>
+                <p>The architecture leverages an offline-first, local area network (LAN) approach, allowing multiple employees to access and update records simultaneously without requiring a public internet connection, ensuring maximum security and speed for office operations.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group">
+                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Lead Developer</p>
+                   <h3 className="text-2xl font-black text-slate-800 mb-4">Wenard Roy Barrera</h3>
+                   <a href="https://kr1stik.cosedevs.com/" target="_blank" className="inline-flex items-center gap-2 text-blue-600 font-black text-sm hover:gap-3 transition-all">
+                      View Portfolio
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                   </a>
+                </div>
+                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
+                   <h3 className="text-xl font-black text-slate-800">John Eric Bayer</h3>
+                </div>
+                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
+                   <h3 className="text-xl font-black text-slate-800">Jefferson Inere</h3>
+                </div>
+              </div>
             </div>
           )}
         </div>
+        <footer className="mt-auto py-6 text-center text-slate-400 font-bold text-xs tracking-widest uppercase">DHSUD | {new Date().getFullYear()}</footer>
       </main>
 
-      {/* --- RENDER THE ISOLATED PROJECT MODAL --- */}
+      {/* VIEW DETAILS MODAL */}
+      {viewingApp && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-3xl font-bold text-slate-800 tracking-tight leading-tight">{viewingApp.name_of_proj}</h2>
+                <button onClick={() => setViewingApp(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><CloseIcon /></button>
+              </div>
+              <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Owner / Developer</p>
+                      <p className="font-medium text-slate-700">{viewingApp.proj_owner_dev || 'Not Specified'}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Type</p>
+                      <p className="font-medium text-slate-700">{viewingApp.proj_type || 'N/A'}</p>
+                    </div>
+                 </div>
+
+                 <div className="p-4 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                        {getStatusBadge(viewingApp.status_of_application)}
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Category</p>
+                        <p className="font-medium text-slate-700">{viewingApp.main_or_compliance}</p>
+                    </div>
+                 </div>
+
+                 <div className="p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Credentials & Certifications</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="font-mono font-medium text-blue-700">CR: {viewingApp.cr_no || 'None'}</p>
+                            <p className="font-mono font-medium text-blue-700 mt-1">LS: {viewingApp.ls_no || 'None'}</p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Options</p>
+                            <div className="flex flex-wrap gap-1">
+                                {viewingApp.crls_options && viewingApp.crls_options.length > 0 ? (
+                                    viewingApp.crls_options.map((opt, i) => (
+                                        <span key={i} className="px-2 py-1 bg-white rounded-md text-xs font-bold text-blue-700 shadow-sm border border-blue-100">{opt}</span>
+                                    ))
+                                ) : (
+                                    <span className="text-xs font-medium text-blue-400 italic">None selected</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+
+                 <div className="p-5 bg-slate-50 rounded-2xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Important Timeline</p>
+                    <div className={`grid grid-cols-1 ${viewingApp.status_of_application === 'Archived' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4`}>
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date Filed</p>
+                            <p className="font-medium text-slate-700">{viewingApp.date_filed ? new Date(viewingApp.date_filed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date Issued</p>
+                            <p className="font-medium text-slate-700">{viewingApp.date_issued ? new Date(viewingApp.date_issued).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date Completion</p>
+                            <p className="font-medium text-slate-700">{viewingApp.date_completion ? new Date(viewingApp.date_completion).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
+                        </div>
+                        {viewingApp.status_of_application === 'Archived' && (
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date Archived</p>
+                            <p className="font-medium text-slate-700">{viewingApp.date_archived ? new Date(viewingApp.date_archived).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
+                          </div>
+                        )}
+                    </div>
+                 </div>
+
+                 <div className="p-5 bg-slate-50 rounded-2xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Address</p>
+                    <p className="font-medium text-slate-700 leading-relaxed">{viewingApp.street_brgy}, {viewingApp.mun_city}, {viewingApp.prov}</p>
+                 </div>
+              </div>
+              <button onClick={() => setViewingApp(null)} className="w-full mt-8 py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-xl transition-all active:scale-95">Close Details</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION DIALOG */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[130]">
+          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95">
+            <h3 className="text-2xl font-black text-slate-800 text-center mb-3">{confirmDialog.title}</h3>
+            <p className="text-slate-500 text-center mb-8 font-medium">{confirmDialog.message}</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => { confirmDialog.action?.(); setConfirmDialog({ ...confirmDialog, show: false }); }} className={`w-full py-3.5 text-white rounded-xl font-black ${confirmDialog.confirmColor}`}>{confirmDialog.confirmText}</button>
+              <button onClick={() => setConfirmDialog({ ...confirmDialog, show: false })} className="w-full py-3.5 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PROJECT FORM MODAL */}
       {isModalOpen && (
         <ProjectFormModal 
           appToEdit={editingApp} 
           onClose={() => setIsModalOpen(false)} 
-          onSave={() => { setIsModalOpen(false); fetchApplications(); }} 
+          onSave={() => { fetchApplications(); setIsModalOpen(false); }}
           showNotification={showNotification}
           requestConfirm={requestConfirm}
+          handleExport={handleExport}
         />
       )}
 
-      {/* --- RENDER THE VIEW DETAILS MODAL --- */}
-      {viewingApp && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
-            <div className="px-7 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
-              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <ViewIcon /> Project Details
-              </h3>
-              <button onClick={() => setViewingApp(null)} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-200 rounded-lg transition-colors">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+      {/* HELP MODAL */}
+      {showHelp && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[130]">
+          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
+            <h3 className="text-2xl font-black text-slate-800 mb-4">Quick Guide</h3>
+            <div className="space-y-4 text-slate-600 font-medium">
+              <p>• <strong className="text-slate-800">Dashboard:</strong> Real-time charts of all active projects.</p>
+              <p>• <strong className="text-slate-800">Projects:</strong> View and manage all your active registration applications.</p>
+              <p>• <strong className="text-slate-800">Import/Export:</strong> Use the Bulk Import tab in the "+ New Project" modal to upload CSV/Excel files.</p>
+              <p>• <strong className="text-slate-800">Archives:</strong> Store old projects. They can be restored or permanently deleted at any time.</p>
             </div>
-            
-            <div className="overflow-y-auto p-7 bg-white">
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-3xl font-black text-slate-800 tracking-tight">{viewingApp.name_of_proj}</h2>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <span className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100 uppercase tracking-wider">{viewingApp.proj_type}</span>
-                    <span className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 uppercase tracking-wider">{viewingApp.type_of_application}</span>
-                    <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-100 uppercase tracking-wider">{viewingApp.main_or_compliance}</span>
-                    <span className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider border ${
-                      viewingApp.status_of_application === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      viewingApp.status_of_application === 'Denied' ? 'bg-red-50 text-red-700 border-red-200' :
-                      viewingApp.status_of_application === 'Endorsed to HREDRB' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                      'bg-blue-50 text-blue-700 border-blue-200'
-                    }`}>{viewingApp.status_of_application}</span>
-                  </div>
-                </div>
+            <button onClick={() => setShowHelp(false)} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black">Got it</button>
+          </div>
+        </div>
+      )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Owner / Developer</p>
-                    <p className="text-sm font-bold text-slate-800">{viewingApp.proj_owner_dev || 'Not Specified'}</p>
-                  </div>
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Full Location</p>
-                    <p className="text-sm font-bold text-slate-800">
-                      {viewingApp.street_brgy ? viewingApp.street_brgy + ', ' : ''}
-                      {viewingApp.mun_city}, {viewingApp.prov}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Registrations & Licenses</h4>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Certificate of Registration (CR No.)</p>
-                      <p className="text-lg font-black text-slate-700 font-mono tracking-wide">{viewingApp.cr_no || '---'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">License to Sell (LS No.)</p>
-                      <p className="text-lg font-black text-slate-700 font-mono tracking-wide">{viewingApp.ls_no || '---'}</p>
-                    </div>
-                    <div className="col-span-2 mt-2">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Certification Options</p>
-                      <div className="flex flex-wrap gap-2">
-                        {viewingApp.crls_options && viewingApp.crls_options.length > 0 ? (
-                          viewingApp.crls_options.map((opt, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-white border border-slate-200 shadow-sm text-slate-600 text-xs font-bold rounded-lg">{opt}</span>
-                          ))
-                        ) : (
-                          <span className="text-sm font-medium text-slate-400 italic">No specific options checked.</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">Important Timeline</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date Filed</p>
-                      <p className="text-sm font-bold text-slate-800">{viewingApp.date_filed ? new Date(viewingApp.date_filed).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date Issued</p>
-                      <p className="text-sm font-bold text-slate-800">{viewingApp.date_issued ? new Date(viewingApp.date_issued).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date of Completion</p>
-                      <p className="text-sm font-bold text-slate-800">{viewingApp.date_completion ? new Date(viewingApp.date_completion).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}) : '---'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {/* CHART FULL REPORT MODAL */}
+      {showChartModal.show && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[150]">
+          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-xl font-black text-slate-800">{showChartModal.title}</h3>
+              <button onClick={() => setShowChartModal({show: false, title: '', data: []})} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><CloseIcon /></button>
             </div>
-            
-            <div className="px-7 py-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-              <button onClick={() => setViewingApp(null)} className="px-6 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl font-bold text-sm transition-colors shadow-sm">
-                Close Details
-              </button>
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {showChartModal.data.map((item, i) => (
+                <div key={i} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <span className="font-bold text-slate-700">{item.name}</span>
+                  <span className="bg-white px-3 py-1 rounded-lg font-black text-blue-600 shadow-sm border border-slate-200">{item.count || item.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button onClick={() => setShowChartModal({show: false, title: '', data: []})} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black">Close Report</button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* PRINT REPORT MODAL */}
+      {showReport && (
+        <PrintReportModal 
+          data={filteredApps} 
+          onClose={() => setShowReport(false)} 
+        />
       )}
 
     </div>
