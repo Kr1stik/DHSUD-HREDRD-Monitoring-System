@@ -1,0 +1,43 @@
+1. The "DHSUD_HREDRD" Master Folder
+Create a clean folder on the office computer (or a USB drive) and include only these essential items:
+
+frontend/dist/: Your optimized React build files.
+
+trackerApp/: Your Django logic, models, and templates.
+
+venv/: The Python virtual environment with all Google and Waitress libraries installed.
+
+.env: Containing the GOOGLE_DRIVE_PORT and CLIENT_SECRET_FILE paths.
+
+client_secret.json: The official Google API key file you downloaded.
+
+manage.py & db.sqlite3: The heart of the Django system (or your PostgreSQL connection settings).
+
+Start_DHSUD_System.bat: The "Power Button" for the staff.
+
+logs/: Where the system_health.log will be stored.
+
+2. Creating the "One-Click" Desktop Icon
+To make it look like a real government application, do this:
+
+Right-click your Start_DHSUD_System.bat file and select Send to > Desktop (create shortcut).
+
+Go to your Desktop, Right-click the new shortcut, and select Properties.
+
+Click Change Icon... (You can download a .ico file of the DHSUD logo or use a professional-looking blue folder icon).
+
+Rename the shortcut to "DHSUD Housing Registry System".
+
+3. The "Emergency" Handover Doc
+Create a 1-page Word document named READ_ME_FIRST.docx for the staff that explains:
+
+How to Start: "Double-click the Desktop icon and click 'Yes' for Admin permission."
+
+How to Access: "Open Chrome and go to http://localhost:8000 or use the IP address shown in the black window for other PCs."
+
+Cloud Backups: "Click 'Run Cloud Sync' once a week or check the 'DAILY_AUTOMATED_BACKUPS' folder in Google Drive."
+
+Troubleshooting: "If the system won't start, check the logs/system_health.log file."
+
+Final Final Step
+Once you copy the folder to the DHSUD computer, run your Deploy_DHSUD.ps1 one last time on their machine to ensure all paths are set correctly for their specific user account.

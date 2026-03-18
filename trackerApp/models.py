@@ -65,5 +65,14 @@ class ProjectApplication(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    #Google Drive
+    drive_link = models.URLField(max_length=500, blank=True, null=True)
+
     def __str__(self):
         return f"{self.name_of_proj} - {self.status_of_application}"
+
+class SystemSettings(models.Model):
+    last_cloud_sync = models.DateTimeField(null=True, blank=True)
+    
+    def __clstr__(self):
+        return "System Settings"

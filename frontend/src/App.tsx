@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
@@ -22,10 +22,22 @@ const ArchiveIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 
 const RestoreIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>);
 const TrashIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
 const SearchIcon = () => (<svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>);
+const CloudIcon = ({ color = 'text-blue-500' }: { color?: string }) => (<svg className={`w-4 h-4 ${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>);
 const BulkIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>);
 const PrinterIcon = () => (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>);
 const MenuIcon = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
 const CloseIcon = () => (<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
+
+const EmptyState = ({ title, message, action }: { title: string, message: string, action?: React.ReactNode }) => (
+  <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white rounded-[32px] border border-slate-100 shadow-sm animate-in fade-in zoom-in-95">
+    <div className="w-24 h-24 bg-slate-50 text-slate-300 rounded-[28px] flex items-center justify-center mb-6">
+      <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+    </div>
+    <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
+    <p className="text-slate-500 font-medium max-w-xs mb-8">{message}</p>
+    {action}
+  </div>
+);
 
 // --- CONSTANTS & INITIAL DATA ---
 const initialOptions = {
@@ -107,6 +119,7 @@ interface Application {
   street_brgy: string;
   crls_options?: string[];
   date_archived?: string | null;
+  drive_link?: string;
 }
 
 // ==========================================
@@ -132,11 +145,13 @@ const ProjectFormModal = ({
   const [isDragging, setIsDragging] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   const emptyForm = {
     name_of_proj: '', proj_owner_dev: '', status_of_application: 'Ongoing', type_of_application: 'New Application', 
     cr_nos: [''], ls_nos: [''],
-    proj_type: '', main_or_compliance: 'Main', date_filed: '', date_issued: '', date_completion: '', prov: '', mun_city: '', street_brgy: '', crls_options: [] as string[]
+    proj_type: '', main_or_compliance: 'Main', date_filed: '', date_issued: '', date_completion: '', prov: '', mun_city: '', street_brgy: '', crls_options: [] as string[],
+    drive_link: ''
   };
 
   const [formData, setFormData] = useState(() => {
@@ -251,16 +266,41 @@ const ProjectFormModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const payload: any = { 
-      ...formData,
-      cr_no: formData.cr_nos.filter((v: string) => v.trim() !== '').join(', '),
-      ls_no: formData.ls_nos.filter((v: string) => v.trim() !== '').join(', '),
-      date_filed: formData.date_filed === '' ? null : formData.date_filed,
-      date_issued: formData.date_issued === '' ? null : formData.date_issued,
-      date_completion: formData.date_completion === '' ? null : formData.date_completion,
+    
+    const formDataObj = new FormData();
+    formDataObj.append('name_of_proj', formData.name_of_proj);
+    formDataObj.append('proj_owner_dev', formData.proj_owner_dev || '');
+    formDataObj.append('proj_type', formData.proj_type);
+    formDataObj.append('type_of_application', formData.type_of_application);
+    formDataObj.append('status_of_application', formData.status_of_application);
+    formDataObj.append('main_or_compliance', formData.main_or_compliance);
+    formDataObj.append('prov', formData.prov);
+    formDataObj.append('mun_city', formData.mun_city);
+    formDataObj.append('street_brgy', formData.street_brgy);
+    
+    if (formData.date_filed) formDataObj.append('date_filed', formData.date_filed);
+    if (formData.date_issued) formDataObj.append('date_issued', formData.date_issued);
+    if (formData.date_completion) formDataObj.append('date_completion', formData.date_completion);
+    
+    formDataObj.append('cr_no', formData.cr_nos.filter((v: string) => v.trim() !== '').join(', '));
+    formDataObj.append('ls_no', formData.ls_nos.filter((v: string) => v.trim() !== '').join(', '));
+    
+    if (formData.crls_options) {
+      formDataObj.append('crls_options', JSON.stringify(formData.crls_options));
     }
-    delete payload.cr_nos; delete payload.ls_nos;
-    const apiCall = appToEdit ? axios.patch(`${API_URL}${appToEdit.id}/`, payload) : axios.post(API_URL, payload);
+    
+    if (uploadFile) {
+      formDataObj.append('drive_file', uploadFile);
+    }
+
+    const config = {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    };
+
+    const apiCall = appToEdit 
+      ? axios.patch(`${API_URL}${appToEdit.id}/`, formDataObj, config) 
+      : axios.post(API_URL, formDataObj, config);
+
     apiCall.then(() => {
         showNotification(appToEdit ? "Project updated" : "Project created", "success");
         onSave();
@@ -572,6 +612,25 @@ const ProjectFormModal = ({
                     </div>
                   </div>
                 </div>
+
+                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
+                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                    Attachments
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="p-6 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3">
+                      <input type="file" className="hidden" id="drive-upload" onChange={(e) => { if(e.target.files && e.target.files[0]) { setUploadFile(e.target.files[0]); showNotification("File selected for upload", "info"); } }} />
+                      <label htmlFor="drive-upload" className="flex flex-col items-center cursor-pointer group">
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-all shadow-sm mb-2">
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                        </div>
+                        <span className="font-bold text-slate-700">Upload to Google Drive</span>
+                        <p className="text-xs text-slate-400 font-medium mt-1">Files will be automatically sorted into the '{formData.status_of_application}' folder in Drive.</p>
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </form>
             ) : (
               <div className="space-y-8 py-4 animate-in slide-in-from-bottom-4 duration-300">
@@ -762,7 +821,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'about'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'cloud' | 'about'>('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -776,13 +835,16 @@ export default function App() {
   const [isBulkMode, setIsBulkMode] = useState(false)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   
+  const [syncFolder, setSyncFolder] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean; title: string; message: string; action: (() => void) | null; confirmText: string; confirmColor: string;
   }>({
     show: false, title: '', message: '', action: null, confirmText: 'Confirm', confirmColor: 'bg-blue-600'
   })
 
-  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const showNotification = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000);
   }
@@ -798,11 +860,40 @@ export default function App() {
         const data = response.data.results || response.data;
         setApplications(Array.isArray(data) ? data : []);
       })
-      .catch(() => {
+      .catch((err) => {
         setApplications([]);
-        showNotification("Failed to load projects from server.", "error");
+        if (err.response?.status === 507) {
+          showNotification("Google Drive Storage Full", "warning");
+        } else {
+          showNotification("Failed to load projects from server.", "error");
+        }
       })
       .finally(() => { if (!silent) setIsLoading(false); });
+  }
+
+  const handleCloudSync = async () => {
+    const performSync = () => {
+      setIsSyncing(true);
+      axios.post('/api/backup/', { folder_name: syncFolder || 'Manual_Backups' })
+        .then((res) => { 
+          showNotification(res.data.message || "Backup successfully uploaded to Google Drive!", "success"); 
+          setSyncFolder(''); 
+        })
+        .catch(() => showNotification("Cloud sync failed. Check server connection or API keys.", "error"))
+        .finally(() => setIsSyncing(false))
+    };
+
+    if (!syncFolder) {
+      requestConfirm(
+        "Default Folder Notice",
+        "You didn't specify a folder name. The backup will be saved to the default folder 'Manual_Backups' in your Google Drive. Do you want to continue?",
+        performSync,
+        "Continue",
+        "bg-blue-600"
+      );
+    } else {
+      performSync();
+    }
   }
 
   useEffect(() => { fetchApplications() }, [])
@@ -814,54 +905,59 @@ export default function App() {
     setIsSidebarOpen(false); // Close sidebar on view change (mobile)
   }, [currentView, searchTerm]);
 
-  const appsArray = Array.isArray(applications) ? applications : [];
-  const activeApps = appsArray.filter(app => app.status_of_application !== 'Archived')
-  const archivedApps = appsArray.filter(app => app.status_of_application === 'Archived')
+  const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
+  const archivedApps = applications.filter(app => app.status_of_application === 'Archived')
   const displayApps = currentView === 'active' ? activeApps : archivedApps
 
-  const stats = {
+  // PERFORMANCE: Memoize stats to prevent recalculation on every render
+  const stats = useMemo(() => ({
     ongoing: activeApps.filter(a => a.status_of_application === 'Ongoing').length,
     approved: activeApps.filter(a => a.status_of_application === 'Approved').length,
     denied: activeApps.filter(a => a.status_of_application === 'Denied').length,
     endorsed: activeApps.filter(a => a.status_of_application === 'Endorsed to HREDRB').length,
-  }
+  }), [activeApps]);
 
-  const chartData = [
+  const chartData = useMemo(() => [
     { name: 'Ongoing', count: stats.ongoing, color: '#3b82f6' },
     { name: 'Approved', count: stats.approved, color: '#10b981' },
     { name: 'Endorsed', count: stats.endorsed, color: '#f59e0b' },
     { name: 'Denied', count: stats.denied, color: '#ef4444' },
-  ];
+  ], [stats]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#64748b', '#ef4444'];
   
-  const projTypeCounts = activeApps.reduce((acc, app) => {
-    const type = app.proj_type || 'Unspecified';
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const pieChartDataRaw = useMemo(() => {
+    const counts = activeApps.reduce((acc, app) => {
+      const type = app.proj_type || 'Unspecified';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-  const pieChartDataRaw = Object.keys(projTypeCounts)
-    .map((key) => ({ name: key, value: projTypeCounts[key] }))
-    .filter(item => item.value > 0)
-    .sort((a, b) => b.value - a.value);
+    return Object.keys(counts)
+      .map((key) => ({ name: key, value: counts[key] }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [activeApps]);
 
-  const top5 = pieChartDataRaw.slice(0, 5);
-  const others = pieChartDataRaw.slice(5);
-  const pieChartData = [...top5];
-  if (others.length > 0) {
-    const othersCount = others.reduce((acc, curr) => acc + curr.value, 0);
-    pieChartData.push({ name: 'Others', value: othersCount });
-  }
+  const pieChartData = useMemo(() => {
+    const top5 = pieChartDataRaw.slice(0, 5);
+    const others = pieChartDataRaw.slice(5);
+    const result = [...top5];
+    if (others.length > 0) {
+      const othersCount = others.reduce((acc, curr) => acc + curr.value, 0);
+      result.push({ name: 'Others', value: othersCount });
+    }
+    return result;
+  }, [pieChartDataRaw]);
 
-  const filteredApps = displayApps.filter(app => {
+  const filteredApps = useMemo(() => displayApps.filter(app => {
     return app.name_of_proj.toLowerCase().includes(searchTerm.toLowerCase()) || 
            app.mun_city.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  }), [displayApps, searchTerm]);
 
-  const sortedApps = [...filteredApps].sort((a, b) => b.id - a.id); 
+  const sortedApps = useMemo(() => [...filteredApps].sort((a, b) => b.id - a.id), [filteredApps]); 
   const totalPages = Math.ceil(sortedApps.length / itemsPerPage);
-  const paginatedApps = sortedApps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedApps = useMemo(() => sortedApps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [sortedApps, currentPage]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) setSelectedIds(paginatedApps.map(app => app.id));
@@ -975,6 +1071,9 @@ export default function App() {
           <button onClick={() => setCurrentView('archive')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'archive' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
             <NavArchiveIcon /> Archives
           </button>
+          <button onClick={() => setCurrentView('cloud')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'cloud' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavDashboardIcon /> Cloud Backup
+          </button>
           
           <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">System & Info</p>
           <button onClick={() => setCurrentView('about')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'about' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
@@ -1072,28 +1171,37 @@ export default function App() {
               </div>
 
               <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden w-full max-w-full">
-                <table className="w-full md:min-w-[900px] text-left border-separate border-spacing-0">
-                  <thead className="hidden md:table-header-group">
-                    <tr className="bg-slate-50 border-b border-slate-200">
-                      {isBulkMode && <th className="px-6 py-4 w-12 border-b border-slate-200"><input type="checkbox" checked={paginatedApps.length > 0 && paginatedApps.every(a => selectedIds.includes(a.id))} onChange={handleSelectAll} /></th>}
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Project Info</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Location</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Status</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Certifications</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right border-b border-slate-200">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
-                    {isLoading ? (
-                      <tr><td colSpan={6} className="px-6 py-20 text-center animate-pulse font-bold text-slate-400">Loading records...</td></tr>
-                    ) : paginatedApps.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-20 text-center font-bold text-slate-400">No results found.</td></tr>
-                    ) : (
-                      paginatedApps.map(app => (
+                {isLoading ? (
+                  <div className="px-6 py-20 text-center animate-pulse font-bold text-slate-400">Loading records...</div>
+                ) : paginatedApps.length === 0 ? (
+                  <EmptyState 
+                    title={searchTerm ? "No Matches Found" : "Registry is Empty"} 
+                    message={searchTerm ? `We couldn't find any projects matching "${searchTerm}". Try a different term.` : `There are no ${currentView} projects to display right now.`}
+                    action={!searchTerm && currentView === 'active' && (
+                      <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">+ Add Your First Project</button>
+                    )}
+                  />
+                ) : (
+                  <table className="w-full md:min-w-[900px] text-left border-separate border-spacing-0">
+                    <thead className="hidden md:table-header-group">
+                      <tr className="bg-slate-50 border-b border-slate-200">
+                        {isBulkMode && <th className="px-6 py-4 w-12 border-b border-slate-200"><input type="checkbox" checked={paginatedApps.length > 0 && paginatedApps.every(a => selectedIds.includes(a.id))} onChange={handleSelectAll} /></th>}
+                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Project Info</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Location</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Certifications</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right border-b border-slate-200">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
+                      {paginatedApps.map(app => (
                         <tr key={app.id} className="flex flex-col relative py-5 px-1 gap-1 md:table-row md:py-0 md:px-0 md:gap-0 md:hover:bg-slate-50 transition-colors group">
                           {isBulkMode && <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5"><input type="checkbox" checked={selectedIds.includes(app.id)} onChange={() => handleSelectRow(app.id)} /></td>}
                           <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
-                            <button onClick={() => setViewingApp(app)} className="font-bold text-blue-600 text-lg hover:underline text-left block truncate max-w-[calc(100%-100px)] md:max-w-xs">{app.name_of_proj}</button>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => setViewingApp(app)} className="font-bold text-blue-600 text-lg hover:underline text-left block truncate max-w-[calc(100%-100px)] md:max-w-xs">{app.name_of_proj}</button>
+                              {app.drive_link && <CloudIcon color={app.status_of_application === 'Approved' ? 'text-emerald-500' : 'text-blue-500'} />}
+                            </div>
                             <span className="text-xs font-medium text-slate-400 mt-1 block uppercase tracking-tight">{app.proj_type}</span>
                           </td>
                           <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
@@ -1126,10 +1234,10 @@ export default function App() {
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
               
               {totalPages > 1 && (
@@ -1144,6 +1252,61 @@ export default function App() {
             </div>
           )}
 
+          {currentView === 'cloud' && (
+  <div className="max-w-2xl mx-auto space-y-8 animate-in slide-in-from-bottom-4">
+    <div className="text-center space-y-3">
+      <div className="w-20 h-20 bg-blue-600 text-white rounded-[28px] flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/40">
+        <CloudIcon color="text-white" />
+      </div>
+      <h1 className="text-3xl font-black text-slate-800">Cloud Backup</h1>
+      <p className="text-slate-500 font-medium">Securely sync your local database to Google Drive.</p>
+    </div>
+
+    <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-200 space-y-6">
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Destination Folder Name</label>
+        <input type="text" placeholder="e.g. DHSUD_Backups_2024" className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" value={syncFolder} onChange={(e) => setSyncFolder(e.target.value)} />
+      </div>
+
+      <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-4">
+        <div className="shrink-0 text-blue-600 mt-1">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </div>
+        <p className="text-sm font-medium text-blue-700 leading-relaxed">This process will create a compressed SQL dump of your current records and upload it directly to your regional DHSUD Google Drive account.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button onClick={handleCloudSync} disabled={isSyncing} className="py-5 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
+          {isSyncing ? (
+            <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          ) : 'Save to Google Drive'}
+        </button>
+
+        {/* 🔄 NEW RESET BUTTON */}
+        <button 
+          onClick={() => {
+            requestConfirm(
+              "Switch Google Account", 
+              "This will disconnect the current Google Drive account. The next sync will require a new login. Continue?", 
+              () => {
+                axios.post('/api/reset-google/')
+                  .then(res => showNotification(res.data.message, "info"))
+                  .catch(() => showNotification("Failed to reset connection.", "error"));
+              }, 
+              "Disconnect Account", 
+              "bg-slate-800"
+            );
+          }} 
+          className="py-5 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-3"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Switch Account
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
           {currentView === 'about' && (
             <div className="bg-white p-8 rounded-3xl border border-slate-200 space-y-8 animate-in fade-in">
               <h1 className="text-3xl font-black text-slate-800">About System</h1>
@@ -1151,6 +1314,7 @@ export default function App() {
                 <p>The Housing and Real Estate Development Regulation Division (HREDRD) Monitoring System is a dedicated digital platform designed to streamline the tracking and management of project applications, Certificates of Registration (CR), and Licenses to Sell (LS).</p>
                 <p>Purpose-built for the Negros Island Region, the system ensures local data integrity and provides real-time analytics for regional administrators to monitor the progress of housing developments and compliance entries.</p>
                 <p>The architecture leverages an offline-first, local area network (LAN) approach, allowing multiple employees to access and update records simultaneously without requiring a public internet connection, ensuring maximum security and speed for office operations.</p>
+                <p>Built with resilience in mind, this system features multi-user LAN support via PostgreSQL, automated daily local database snapshots, and secure Google Drive integration to ensure DHSUD data is never lost.</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1300,6 +1464,8 @@ export default function App() {
             <div className="space-y-4 text-slate-600 font-medium">
               <p>• <strong className="text-slate-800">Dashboard:</strong> Real-time charts of all active projects.</p>
               <p>• <strong className="text-slate-800">Projects:</strong> View and manage all your active registration applications.</p>
+              <p>• <strong className="text-slate-800">Cloud Backup:</strong> Save a secure copy of your database to Google Drive using the 'Save to Google Drive' button.</p>
+              <p>• <strong className="text-slate-800">Switching Accounts:</strong> If your Google Drive is full, go to the Cloud Backup tab and click 'Switch Account' to safely disconnect and log in with a new one.</p>
               <p>• <strong className="text-slate-800">Import/Export:</strong> Use the Bulk Import tab in the "+ New Project" modal to upload CSV/Excel files.</p>
               <p>• <strong className="text-slate-800">Archives:</strong> Store old projects. They can be restored or permanently deleted at any time.</p>
             </div>

@@ -1,0 +1,30 @@
+2026-03-18 12:37:58 - INFO - C:\Users\Administrator\Desktop\HREDRD\DHSUD\trackerApp\drive_service.py changed, reloading.
+2026-03-18 13:04:38 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1304.csv (Attempt 1)
+2026-03-18 13:05:29 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1305.csv (Attempt 1)
+2026-03-18 13:05:29 [WARNING] Sync Attempt 1 failed for HREDRD_Backup_2026_03_18_1305.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-18 13:05:31 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1305.csv (Attempt 2)
+2026-03-18 13:05:31 [WARNING] Sync Attempt 2 failed for HREDRD_Backup_2026_03_18_1305.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-18 13:05:35 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1305.csv (Attempt 3)
+2026-03-18 13:05:35 [WARNING] Sync Attempt 3 failed for HREDRD_Backup_2026_03_18_1305.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-18 13:05:35 [ERROR] CRITICAL: Cloud Sync failed after 3 attempts for HREDRD_Backup_2026_03_18_1305.csv
+2026-03-18 13:06:55 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1306.csv (Attempt 1)
+2026-03-18 13:07:03 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1304.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1CfSNNk8szZTDfW5hilLbsbaxASGLgRWS/edit?usp=drivesdk&ouid=112714501109447841624&rtpof=true&sd=true
+2026-03-18 13:07:04 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1306.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1QlJeNle2YUrZxky8TypN4_wkkkMBgN64/edit?usp=drivesdk&ouid=112714501109447841624&rtpof=true&sd=true
+2026-03-18 13:26:31 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1326.csv (Attempt 1)
+2026-03-18 13:26:45 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1326.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1_wgwR96KCd5CE7veksMjl-gxWZu0WA1z/edit?usp=drivesdk&ouid=112714501109447841624&rtpof=true&sd=true
+2026-03-18 13:26:54 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1326.csv (Attempt 1)
+2026-03-18 13:27:26 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1326.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1zL842gVHz0mVnjuS0IZaROZRTc5mhcC1/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 14:21:57 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1421.csv (Attempt 1)
+2026-03-18 14:22:08 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1421.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1VzBkHJv5eyo2POcpmEEf2ZYacNbd2oc_/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:47:41 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1647.csv (Attempt 1)
+2026-03-18 16:48:04 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1648.csv (Attempt 1)
+2026-03-18 16:48:07 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1648.csv (Attempt 1)
+2026-03-18 16:48:16 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1647.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1eJFi93uOWfPIpC_kwEFCxZU0582SVquy/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:48:31 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1648.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1DbjvYNMiK6hCJNC4oWdY9Z1XWtRIsOsw/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:48:31 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1648.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1Q6U6j0CWjPj4sq5ZJ91gZps3sgedlFX_/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:48:41 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1648.csv (Attempt 1)
+2026-03-18 16:49:43 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1648.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1EgnPPOfUiCzQIMMfOy_W5CsZatd3iYZ4/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:51:03 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1651.csv (Attempt 1)
+2026-03-18 16:52:04 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1651.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1UhpGLWalfrA-VtBCxj1nDOD0haEhTseu/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
+2026-03-18 16:52:05 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1652.csv (Attempt 1)
+2026-03-18 16:52:26 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1652.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/134k26ltV10qvFQSAJUWSvKtT6gBHs_Bc/edit?usp=drivesdk&ouid=112714501109447841624&rtpof=true&sd=true
