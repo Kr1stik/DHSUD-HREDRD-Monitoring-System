@@ -1,0 +1,19 @@
+# Security & API Keys
+.env
+client_secret.json
+token.pickle
+
+# Backups & Logs
+Local_Backups/
+logs/
+*.sql
+*.sqlite3
+
+# Python & Environments
+venv/
+__pycache__/
+*.pyc
+
+# Node Modules (Frontend)
+frontend/node_modules/
+frontend/dist/
