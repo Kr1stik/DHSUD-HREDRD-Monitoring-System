@@ -1,101 +1,86 @@
-# DHSUD Tracker - Negros Island Region
+# 🏛️ DHSUD HREDRD Monitoring System
 
-A comprehensive web-based tracking system built for the Department of Human Settlements and Urban Development (DHSUD) Negros Island Region. This system manages project applications, Certificates of Registration (CR), Licenses to Sell (LS), and compliance records with built-in analytics and bulk processing features.
+![System Status](https://img.shields.io/badge/Status-Production-success)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Platform](https://img.shields.io/badge/Platform-Windows_LAN-lightgrey)
+
+A localized, offline-first project monitoring system developed for the **Department of Human Settlements and Urban Development (DHSUD) Negros Island Region**. This system streamlines the tracking of housing project applications, Certificates of Registration (CR), and Licenses to Sell (LS) through a secure, high-performance Local Area Network (LAN) environment.
+
+## 🚀 Key Features
+
+* **Multi-User LAN Architecture:** Powered by `waitress` with multi-threading, allowing 16+ government staff members to access and modify the database simultaneously over the office network without internet reliance.
+* **Dual-Layer Data Resilience:**
+    * *Local Snapshots:* Automated PostgreSQL `pg_dump` backups generated every time the server boots.
+    * *Cloud Sync:* Seamless, one-click CSV data export to Google Drive via the Google Drive API.
+* **Zero-Config Account Switching:** Integrated Google OAuth 2.0 flow with offline access (refresh tokens) that allows staff to securely disconnect and switch Google Drive backup accounts without touching the codebase.
+* **Interactive Analytics:** Real-time dashboards built with Recharts to visualize application statuses, project types, and regional compliance.
+* **Industrial-Grade Deployment:** Custom `.ps1` (PowerShell) and `.bat` scripts that handle automated frontend building, static file collection, service wake-ups, and UAC Administrator elevation.
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** React, TypeScript, Tailwind CSS, Vite, Recharts, SheetJS (XLSX)
-* **Backend:** Python, Django, Django REST Framework
-* **Database:** PostgreSQL
+**Frontend:**
+* React 18 (TypeScript)
+* Vite
+* Tailwind CSS
+* Recharts & SheetJS (Data Export)
 
----
+**Backend:**
+* Django (Python)
+* PostgreSQL
+* Waitress (WSGI Server for Windows)
+* Google API Client (Drive v3)
 
-## 📋 Prerequisites
+## 📂 System Architecture
 
-Before you begin, ensure you have the following installed on your local machine:
-* [Python 3.10+](https://www.python.org/downloads/)
-* [Node.js v18+](https://nodejs.org/) & npm
-* [PostgreSQL](https://www.postgresql.org/download/)
-* Git
+The system bridges a modern React Single Page Application (SPA) with a robust Django backend, optimized specifically for a Windows-based government office environment. 
 
----
+1.  **Deployment (`Deploy_DHSUD.ps1`):** Compiles the Vite frontend and dynamically moves the `dist` assets into the Django `static` and `templates` directories. It automatically verifies `.env` configurations and system health logging directories.
+2.  **Runtime (`Start_DHSUD_System.bat`):** Elevates to Administrator, verifies/starts the PostgreSQL Windows service, creates a daily `.sql` database backup, and serves the application to the local IPv4 address for office-wide access.
 
-## 🚀 Installation & Setup Guide
+## ⚙️ Local Setup & Installation
 
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/YourFriendsName/TheProjectName.git](https://github.com/YourFriendsName/TheProjectName.git)
-cd TheProjectName
-2. Backend Setup (Django)
-Open a terminal and navigate to your backend directory (if separated):
+If you are cloning this repository for further development:
 
-Create and activate a virtual environment:
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/YOUR_USERNAME/DHSUD-HREDRD-Monitoring-System.git](https://github.com/YOUR_USERNAME/DHSUD-HREDRD-Monitoring-System.git)
+   cd DHSUD-HREDRD-Monitoring-System
 
-Windows:
+   Environment Configuration:
+Create a .env file in the root directory:
+
+Code snippet
+GOOGLE_DRIVE_PORT=8088
+CLIENT_SECRET_FILE=client_secret.json
+Note: You must provide your own client_secret.json from the Google Cloud Console.
+
+Install Dependencies:
 
 Bash
 python -m venv venv
-.\venv\Scripts\activate
-Mac/Linux:
-
-Bash
-python3 -m venv venv
-source venv/bin/activate
-Install dependencies:
-Make sure your virtual environment is active, then run:
-
-Bash
+venv\Scripts\activate
 pip install -r requirements.txt
-Database Configuration:
+cd frontend && npm install
+Deploy & Run:
+Run the deployment script, followed by the startup script.
 
-Open pgAdmin or your PostgreSQL command line and create a new database named dhsud_db (or whatever name is specified in settings.py).
+PowerShell
+./Deploy_DHSUD.ps1
+./Start_DHSUD_System.bat
+👨‍💻 Author
+Wenard Roy F. Barrera * Role: Lead Developer / Software Engineering Intern
 
-Update the DATABASES configuration in your Django settings.py with your local PostgreSQL username and password.
+Institution: STI West Negros University (BS Computer Science)
 
-Run Migrations:
+Portfolio: kr1stik.cosedevs.com
 
-Bash
-python manage.py makemigrations
-python manage.py migrate
-Start the Backend Server:
-
-Bash
-python manage.py runserver
-The backend API will now be running at http://127.0.0.1:8000
-
-3. Frontend Setup (React)
-Open a new terminal window (keep the backend running) and navigate to the frontend directory:
-
-Install node modules:
-
-Bash
-npm install
-(Note: This will install all required UI packages including Axios, Tailwind, Recharts, and XLSX).
-
-Start the Frontend Development Server:
-
-Bash
-npm run dev
-The frontend will now be running at http://localhost:5173
-
-✨ Key Features
-Interactive Dashboard: Real-time analytics using Recharts (Bar and Donut charts) to visualize project types and application statuses.
-
-Bulk Processing: Select multiple records at once to batch archive, restore, or permanently delete projects.
-
-Excel Import/Export: Seamlessly map and export database records to the exact DHSUD-formatted Excel template using SheetJS.
-
-Search & Filter: Instantly filter records by status, project name, or location.
-
-🤝 Contributing
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-
-Push to the Branch (git push -u origin feature/AmazingFeature)
-
-Open a Pull Request
+Developed during an official internship with the Administrative and Finance Division of DHSUD Negros Occidental (2026).
 
 
-### A Quick Tip for the README
-In the **Database Configuration** section, I put a placeholder name (`dhsud_db`). You
+***
+
+### How to add this to your GitHub right now:
+1. Save the text above into a file named `README.md` in your main `DHSUD` folder.
+2. Open your terminal in that folder.
+
+**Would you like me to provide the quick 3-line Git command sequence to push this new REA
