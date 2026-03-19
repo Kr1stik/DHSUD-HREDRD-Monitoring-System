@@ -8,8 +8,29 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import ProjectApplication
 from .serializers import ProjectApplicationSerializer
-from .drive_service import upload_to_drive
+from .drive_service import upload_to_drive, get_connected_account, get_drive_service
 from django.http import JsonResponse
+
+@api_view(['POST'])
+def connect_google_account(request):
+    try:
+        # Calling get_drive_service() will trigger InstalledAppFlow if token.pickle is missing
+        get_drive_service()
+        email = get_connected_account()
+        return Response({'status': 'success', 'message': 'Account connected successfully!', 'email': email})
+    except Exception as e:
+        # Catch the exception (happens when user closes auth window or declines)
+        return Response({'status': 'warning', 'message': 'Google login was canceled or failed. Please try again.'}, status=400)
+
+@api_view(['GET'])
+def google_connection_status(request):
+    try:
+        email = get_connected_account()
+        if email:
+            return Response({'connected': True, 'email': email})
+        return Response({'connected': False})
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=500)
 
 class ProjectApplicationViewSet(viewsets.ModelViewSet):
     queryset = ProjectApplication.objects.all()

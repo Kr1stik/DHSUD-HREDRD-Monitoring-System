@@ -28,3 +28,46 @@
 2026-03-18 16:52:04 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1651.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/1UhpGLWalfrA-VtBCxj1nDOD0haEhTseu/edit?usp=drivesdk&ouid=102121587081250024057&rtpof=true&sd=true
 2026-03-18 16:52:05 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_18_1652.csv (Attempt 1)
 2026-03-18 16:52:26 [SUCCESS] Successfully synced HREDRD_Backup_2026_03_18_1652.csv to Cloud. Link: https://docs.google.com/spreadsheets/d/134k26ltV10qvFQSAJUWSvKtT6gBHs_Bc/edit?usp=drivesdk&ouid=112714501109447841624&rtpof=true&sd=true
+2026-03-19 10:21:50 [ERROR] Failed to get connected account: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 10:21:52 [ERROR] Failed to get connected account: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 10:23:11 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1023.csv (Attempt 1)
+2026-03-19 10:23:11 [WARNING] Sync Attempt 1 failed for HREDRD_Backup_2026_03_19_1023.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 10:23:13 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1023.csv (Attempt 2)
+2026-03-19 10:23:13 [WARNING] Sync Attempt 2 failed for HREDRD_Backup_2026_03_19_1023.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 10:23:17 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1023.csv (Attempt 3)
+2026-03-19 10:23:17 [WARNING] Sync Attempt 3 failed for HREDRD_Backup_2026_03_19_1023.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 10:23:17 [ERROR] CRITICAL: Cloud Sync failed after 3 attempts for HREDRD_Backup_2026_03_19_1023.csv
+2026-03-19 11:03:34 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1103.csv (Attempt 1)
+2026-03-19 11:03:34 [WARNING] Sync Attempt 1 failed for HREDRD_Backup_2026_03_19_1103.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:03:36 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1103.csv (Attempt 2)
+2026-03-19 11:03:36 [WARNING] Sync Attempt 2 failed for HREDRD_Backup_2026_03_19_1103.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:03:40 [INFO] Starting cloud sync for HREDRD_Backup_2026_03_19_1103.csv (Attempt 3)
+2026-03-19 11:03:40 [WARNING] Sync Attempt 3 failed for HREDRD_Backup_2026_03_19_1103.csv: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:03:40 [ERROR] CRITICAL: Cloud Sync failed after 3 attempts for HREDRD_Backup_2026_03_19_1103.csv
+2026-03-19 11:13:18 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:13:24 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:13:43 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:13:46 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:14:28 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:14:36 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:14:37 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:14:39 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:14:41 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:15:54 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:26:26 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:26:31 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:26:39 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:27:39 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:30:10 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:30:16 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:30:16 [WARNING] Google Login Canceled or Failed: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+2026-03-19 11:40:22 [INFO] Attempting to start Google Auth server on port 8088...
+2026-03-19 11:40:29 [INFO] Attempting to start Google Auth server on port 8088...
+2026-03-19 11:40:29 [WARNING] Port 8088 is currently blocked: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted. Trying next port...
+2026-03-19 11:40:29 [INFO] Attempting to start Google Auth server on port 8089...
+2026-03-19 11:41:10 [INFO] Attempting to start Google Auth server on port 8088...
+2026-03-19 11:41:10 [WARNING] Port 8088 is currently blocked: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted. Trying next port...
+2026-03-19 11:41:10 [INFO] Attempting to start Google Auth server on port 8089...
+2026-03-19 11:48:21 [INFO] Attempting to start Google Auth server on port 8088...
+2026-03-19 11:48:21 [WARNING] Port 8088 is currently blocked: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted. Trying next port...
+2026-03-19 11:48:21 [INFO] Attempting to start Google Auth server on port 8089...

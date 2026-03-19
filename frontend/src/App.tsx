@@ -837,6 +837,19 @@ export default function App() {
   
   const [syncFolder, setSyncFolder] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [connectedEmail, setConnectedEmail] = useState<string | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+
+  const checkGoogleStatus = () => {
+    setIsCheckingStatus(true);
+    axios.get('/api/google-status/')
+      .then(res => {
+        if (res.data.connected) setConnectedEmail(res.data.email);
+        else setConnectedEmail(null);
+      })
+      .catch(() => setConnectedEmail(null))
+      .finally(() => setIsCheckingStatus(false));
+  };
 
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean; title: string; message: string; action: (() => void) | null; confirmText: string; confirmColor: string;
@@ -896,13 +909,20 @@ export default function App() {
     }
   }
 
-  useEffect(() => { fetchApplications() }, [])
+  useEffect(() => { 
+    fetchApplications();
+    checkGoogleStatus();
+  }, [])
 
   useEffect(() => {
     setSelectedIds([]);
     setIsBulkMode(false);
     setCurrentPage(1); 
     setIsSidebarOpen(false); // Close sidebar on view change (mobile)
+    
+    if (currentView === 'cloud') {
+      checkGoogleStatus();
+    }
   }, [currentView, searchTerm]);
 
   const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
@@ -1036,15 +1056,23 @@ export default function App() {
         </button>
       </header>
 
-      {/* TOAST NOTIFICATIONS ... */}
+      {/* TOAST NOTIFICATIONS */}
       {toast.show && (
-        <div className="fixed top-20 md:top-8 right-4 md:right-8 z-[150] min-w-[280px] sm:min-w-[320px] max-w-md bg-white border border-slate-100 rounded-2xl shadow-2xl p-4 flex items-start gap-4 animate-in slide-in-from-top-8 fade-in">
-          <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-            {toast.type === 'success' ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6" /></svg>}
+        <div className={`fixed top-20 md:top-8 right-4 md:right-8 z-[150] min-w-[280px] sm:min-w-[320px] max-w-md text-white rounded-2xl shadow-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-8 fade-in ${
+          toast.type === 'success' ? 'bg-emerald-600' : 
+          toast.type === 'error' ? 'bg-red-600' : 
+          toast.type === 'warning' ? 'bg-amber-500' : 'bg-blue-600'
+        }`}>
+          <div className="shrink-0 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            {toast.type === 'success' ? (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+            )}
           </div>
-          <div className="flex-1 pt-0.5">
-            <p className="text-sm font-bold text-slate-800">{toast.type === 'success' ? 'Success' : 'Notice'}</p>
-            <p className="text-sm font-medium text-slate-500 leading-relaxed">{toast.message}</p>
+          <div className="flex-1">
+            <p className="text-sm font-black uppercase tracking-widest opacity-80">{toast.type}</p>
+            <p className="text-sm font-bold leading-tight">{toast.message}</p>
           </div>
         </div>
       )}
@@ -1263,6 +1291,31 @@ export default function App() {
     </div>
 
     <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-200 space-y-6">
+      {/* 📧 CLOUD ACCOUNT INDICATOR */}
+      <div className={`p-4 rounded-2xl border-2 flex items-center gap-4 transition-all ${
+        isCheckingStatus ? 'bg-slate-50 border-slate-100 animate-pulse' :
+        connectedEmail ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'
+      }`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+          connectedEmail ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
+        }`}>
+          {isCheckingStatus ? (
+            <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          ) : (
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          )}
+        </div>
+        <div className="flex-1">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Connected Account</p>
+          <p className="text-lg font-black text-slate-800 truncate">
+            {isCheckingStatus ? 'Checking...' : connectedEmail || 'No Google account connected.'}
+          </p>
+        </div>
+        {!isCheckingStatus && connectedEmail && (
+          <div className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">Active</div>
+        )}
+      </div>
+
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Destination Folder Name</label>
         <input type="text" placeholder="e.g. DHSUD_Backups_2024" className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all" value={syncFolder} onChange={(e) => setSyncFolder(e.target.value)} />
@@ -1282,25 +1335,46 @@ export default function App() {
           ) : 'Save to Google Drive'}
         </button>
 
-        {/* 🔄 NEW RESET BUTTON */}
+        {/* 🔄 SMART CONNECT/SWITCH BUTTON */}
         <button 
           onClick={() => {
-            requestConfirm(
-              "Switch Google Account", 
-              "This will disconnect the current Google Drive account. The next sync will require a new login. Continue?", 
-              () => {
-                axios.post('/api/reset-google/')
-                  .then(res => showNotification(res.data.message, "info"))
-                  .catch(() => showNotification("Failed to reset connection.", "error"));
-              }, 
-              "Disconnect Account", 
-              "bg-slate-800"
-            );
+            if (!connectedEmail) {
+              // 🔌 DIRECT CONNECT (Bypass Modal)
+              showNotification("Opening Google Login window...", "info");
+              axios.post('/api/connect-google/')
+                .then(res => {
+                  setConnectedEmail(res.data.email);
+                  showNotification("Successfully connected!", "success");
+                })
+                .catch((err) => {
+                  if (err.response && err.response.data && err.response.data.message) {
+                    showNotification(err.response.data.message, err.response.data.status || 'warning');
+                  } else {
+                    showNotification("Failed to connect account.", "error");
+                  }
+                });
+            } else {
+              // 🔄 SWITCH ACCOUNT (Keep Modal)
+              requestConfirm(
+                "Switch Google Account", 
+                "This will disconnect the current Google Drive account. The next sync will require a new login. Continue?", 
+                () => {
+                  axios.post('/api/reset-google/')
+                    .then(res => {
+                      setConnectedEmail(null);
+                      showNotification(res.data.message, "info");
+                    })
+                    .catch(() => showNotification("Failed to reset connection.", "error"));
+                }, 
+                "Disconnect Account", 
+                "bg-slate-800"
+              );
+            }
           }} 
           className="py-5 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-3"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          Switch Account
+          {connectedEmail ? 'Switch Account' : 'Connect Account'}
         </button>
       </div>
     </div>

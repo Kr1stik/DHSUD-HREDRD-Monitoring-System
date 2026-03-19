@@ -1,6 +1,7 @@
 import os
 import pickle
 import time
+import socket
 from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -38,14 +39,47 @@ def get_drive_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            port = int(os.getenv('GOOGLE_DRIVE_PORT', 8088))
-            # prompt='select_account' ensures the user is asked to choose an account
-            # access_type='offline' ensures we get a refresh token
-            creds = flow.run_local_server(port=port, prompt='select_account', access_type='offline')
+            fallback_ports = [8088, 8089, 8090]
+            creds = None
+            
+            for port in fallback_ports:
+                try:
+                    log_event(f"Attempting to start Google Auth server on port {port}...", "info")
+                    # prompt='select_account' ensures the user is asked to choose an account
+                    # access_type='offline' ensures we get a refresh token
+                    creds = flow.run_local_server(
+                        port=port, 
+                        prompt='select_account', 
+                        access_type='offline',
+                        success_message="Authentication successful! You can close this window."
+                    )
+                    if creds:
+                        break
+                except (OSError, socket.error) as e:
+                    log_event(f"Port {port} is currently blocked: {e}. Trying next port...", "warning")
+                    continue
+                except Exception as e:
+                    log_event(f"Google Login Canceled or Failed: {e}", "warning")
+                    raise Exception("Google authentication was canceled or failed. Please try again.")
+
+            if not creds:
+                raise Exception("All local ports (8088-8090) are blocked. Please restart the application or close hanging browser tabs.")
+
         with open(TOKEN_PATH, 'wb') as token:
             pickle.dump(creds, token)
 
     return build('drive', 'v3', credentials=creds)
+
+def get_connected_account():
+    if not os.path.exists(TOKEN_PATH):
+        return None
+    try:
+        service = get_drive_service()
+        about = service.about().get(fields="user").execute()
+        return about.get('user', {}).get('emailAddress')
+    except Exception as e:
+        log_event(f"Failed to get connected account: {e}", "error")
+        return None
 
 def get_or_create_folder(folder_name):
     service = get_drive_service()
