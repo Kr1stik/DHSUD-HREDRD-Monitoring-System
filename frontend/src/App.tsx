@@ -4,9 +4,11 @@ import * as XLSX from 'xlsx';
 
 import Sidebar from './components/Sidebar';
 import ProjectFormModal from './components/ProjectFormModal';
+import SalespersonFormModal from './components/SalespersonFormModal';
 import Dashboard from './components/Dashboard';
 import CloudBackup from './components/CloudBackup';
 import ProjectRegistry from './components/ProjectRegistry';
+import SalespersonRegistry from './components/SalespersonRegistry';
 import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
@@ -127,8 +129,18 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'cloud' | 'about'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'cloud' | 'about' | 'salespersons'>('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  
+  const [salespersonModalConfig, setSalespersonModalConfig] = useState<{
+    isOpen: boolean;
+    mode: 'create' | 'edit' | 'view';
+    data: any;
+  }>({
+    isOpen: false,
+    mode: 'create',
+    data: null
+  });
   
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -148,6 +160,10 @@ export default function App() {
 
   // 🛡️ SECURITY: Detect if current user is on LAN instead of the Main Server PC
   const isRemote = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+  // State to trigger refresh in child component
+  const [salespersonRefreshKey, setSalespersonRefreshKey] = useState(0);
+  const handleRefreshSalespersons = () => setSalespersonRefreshKey(prev => prev + 1);
 
   const checkGoogleStatus = () => {
     setIsCheckingStatus(true);
@@ -228,10 +244,7 @@ export default function App() {
     setIsBulkMode(false);
     setCurrentPage(1); 
     setIsSidebarOpen(false); // Close sidebar on view change (mobile)
-    
-    if (currentView === 'cloud') {
-      checkGoogleStatus();
-    }
+
   }, [currentView, searchTerm]);
 
   const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
@@ -464,6 +477,23 @@ export default function App() {
             />
           )}
 
+          {currentView === 'salespersons' && (
+            <SalespersonRegistry 
+              key={salespersonRefreshKey}
+              onAdd={() => {
+                setSalespersonModalConfig({ isOpen: true, mode: 'create', data: null });
+              }}
+              onEdit={(sp) => {
+                setSalespersonModalConfig({ isOpen: true, mode: 'edit', data: sp });
+              }}
+              onView={(sp) => {
+                setSalespersonModalConfig({ isOpen: true, mode: 'view', data: sp });
+              }}
+              showNotification={showNotification}
+              requestConfirm={requestConfirm}
+            />
+          )}
+
           {currentView === 'cloud' && (
             <CloudBackup 
               connectedEmail={connectedEmail}
@@ -674,6 +704,23 @@ export default function App() {
         <PrintReportModal 
           data={filteredApps} 
           onClose={() => setShowReport(false)} 
+        />
+      )}
+
+      {/* SALESPERSON FORM MODAL */}
+      {salespersonModalConfig.isOpen && (
+        <SalespersonFormModal 
+          isOpen={salespersonModalConfig.isOpen}
+          mode={salespersonModalConfig.mode}
+          salesperson={salespersonModalConfig.data}
+          onClose={() => setSalespersonModalConfig({ ...salespersonModalConfig, isOpen: false })}
+          onSuccess={() => {
+            handleRefreshSalespersons();
+            showNotification(
+              salespersonModalConfig.mode === 'create' ? "Salesperson registered!" : "Record updated!", 
+              "success"
+            );
+          }}
         />
       )}
 

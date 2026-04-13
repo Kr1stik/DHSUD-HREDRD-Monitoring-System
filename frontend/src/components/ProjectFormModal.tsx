@@ -27,7 +27,6 @@ const ProjectFormModal = ({
   const [isDragging, setIsDragging] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   const emptyForm = {
     name_of_proj: '', proj_owner_dev: '', status_of_application: 'Ongoing', type_of_application: 'New Application', 
@@ -170,10 +169,6 @@ const ProjectFormModal = ({
     if (formData.crls_options) {
       formDataObj.append('crls_options', JSON.stringify(formData.crls_options));
     }
-    
-    if (uploadFile) {
-      formDataObj.append('drive_file', uploadFile);
-    }
 
     const config = {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -279,92 +274,90 @@ const ProjectFormModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[100] animate-in fade-in duration-200">
-        <div className="bg-slate-100 rounded-[24px] sm:rounded-[28px] shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[94vh] flex flex-col overflow-hidden border border-slate-200">
+      <div className="fixed top-0 left-0 w-screen h-screen z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
           
-          <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 flex flex-col gap-4 sm:gap-6 bg-white shadow-sm z-10">
+          <div className="sticky top-0 bg-white px-6 sm:px-8 py-4 border-b flex flex-col gap-4 z-10">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">{appToEdit ? 'Update Project' : 'Project Management'}</h3>
-                <p className="text-slate-500 font-medium text-xs sm:text-sm mt-1">{appToEdit ? 'Modify details for ' + appToEdit.name_of_proj : 'Manual entry or bulk data processing'}</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
+                    {appToEdit ? 'Edit Project Details' : 'New Project Registration'}
+                </h2>
+                {!appToEdit && (
+                  <div className="mt-2 flex p-1 bg-slate-100 rounded-lg w-fit">
+                    <button onClick={() => {setActiveTab('form'); setPreviewData([]);}} className={`px-4 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'form' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Form View</button>
+                    <button onClick={() => setActiveTab('import')} className={`px-4 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'import' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Bulk Operations</button>
+                  </div>
+                )}
               </div>
-              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-2xl transition-all">
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-slate-100 rounded-xl transition-all">
                 <CloseIcon />
               </button>
             </div>
-
-            {!appToEdit && (
-              <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit">
-                <button onClick={() => {setActiveTab('form'); setPreviewData([]);}} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'form' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Manual Entry</button>
-                <button onClick={() => setActiveTab('import')} className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'import' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Bulk Import / Export</button>
-              </div>
-            )}
           </div>
           
-          <div className="flex-1 overflow-y-auto px-6 sm:px-8 pb-8 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent mt-4">
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8">
             {activeTab === 'form' ? (
-              <form id="app-form" onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
-                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    Project Details
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-1 md:col-span-2 space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Project Name *</label>
-                      <input required className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 text-base font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
+              <form id="app-form" onSubmit={handleSubmit} className="space-y-8">
+                {/* Project Details */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 border-b border-blue-200 pb-2 mb-4 mt-2">Project Basics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="col-span-1 md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Project Name *</label>
+                      <input required className="w-full border border-slate-300 rounded-md px-3 py-2 text-base font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-gray-800" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
                     </div>
-                    <div className="col-span-1 md:col-span-2 space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Owner / Developer</label>
-                      <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.proj_owner_dev} onChange={e => setFormData({...formData, proj_owner_dev: e.target.value})} />
+                    <div className="col-span-1 md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Owner / Developer</label>
+                      <input className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-gray-800" value={formData.proj_owner_dev} onChange={e => setFormData({...formData, proj_owner_dev: e.target.value})} />
                     </div>
-                    <div className="space-y-2 relative">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Project Type</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddOption('projTypes', 'Project Type')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.proj_type && <button type="button" onClick={() => handleDeleteOption('projTypes', 'Project Type', formData.proj_type, 'proj_type')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Project Type</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddOption('projTypes', 'Project Type')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.proj_type && <button type="button" onClick={() => handleDeleteOption('projTypes', 'Project Type', formData.proj_type, 'proj_type')} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.proj_type} onChange={e => setFormData({...formData, proj_type: e.target.value})}>
+                      <select className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800" value={formData.proj_type} onChange={e => setFormData({...formData, proj_type: e.target.value})}>
                         <option value="" disabled>Select Type...</option>
                         {formOptions.projTypes.map((type: string) => (<option key={type} value={type}>{type}</option>))}
                       </select>
                     </div>
-                    <div className="space-y-2 relative">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Application Type</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddOption('appTypes', 'Application Type')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.type_of_application && <button type="button" onClick={() => handleDeleteOption('appTypes', 'Application Type', formData.type_of_application, 'type_of_application')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Application Type</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddOption('appTypes', 'Application Type')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.type_of_application && <button type="button" onClick={() => handleDeleteOption('appTypes', 'Application Type', formData.type_of_application, 'type_of_application')} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.type_of_application} onChange={e => setFormData({...formData, type_of_application: e.target.value})}>
+                      <select className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800" value={formData.type_of_application} onChange={e => setFormData({...formData, type_of_application: e.target.value})}>
                         {formOptions.appTypes.map((type: string) => (<option key={type} value={type}>{type}</option>))}
                       </select>
                     </div>
-                    <div className="space-y-2 relative">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Current Status</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddOption('statusOptions', 'Status')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.status_of_application && <button type="button" onClick={() => handleDeleteOption('statusOptions', 'Status', formData.status_of_application, 'status_of_application')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Current Status</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddOption('statusOptions', 'Status')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.status_of_application && <button type="button" onClick={() => handleDeleteOption('statusOptions', 'Status', formData.status_of_application, 'status_of_application')} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.status_of_application} onChange={e => setFormData({...formData, status_of_application: e.target.value})}>
+                      <select className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800" value={formData.status_of_application} onChange={e => setFormData({...formData, status_of_application: e.target.value})}>
                         <option value="" disabled>Select Status...</option>
                         {formOptions.statusOptions.map((status: string) => (<option key={status} value={status}>{status}</option>))}
                       </select>
                     </div>
-                    <div className="space-y-2 relative">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Main or Compliance</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddOption('mainCompOptions', 'Category')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.main_or_compliance && <button type="button" onClick={() => handleDeleteOption('mainCompOptions', 'Category', formData.main_or_compliance, 'main_or_compliance')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Main or Compliance</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddOption('mainCompOptions', 'Category')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.main_or_compliance && <button type="button" onClick={() => handleDeleteOption('mainCompOptions', 'Category', formData.main_or_compliance, 'main_or_compliance')} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.main_or_compliance} onChange={e => setFormData({...formData, main_or_compliance: e.target.value})}>
+                      <select className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800" value={formData.main_or_compliance} onChange={e => setFormData({...formData, main_or_compliance: e.target.value})}>
                         <option value="" disabled>Select Category...</option>
                         {formOptions.mainCompOptions.map((opt: string) => (<option key={opt} value={opt}>{opt}</option>))}
                       </select>
@@ -372,101 +365,95 @@ const ProjectFormModal = ({
                   </div>
                 </div>
 
-                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-5">
-                    <h4 className="text-base font-black text-slate-800 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                      Certifications
-                    </h4>
-                    <button type="button" onClick={() => handleAddOption('crlsOptions', 'Certification')} className="text-[10px] font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg">+ Add Option</button>
+                {/* Technical Credentials */}
+                <div>
+                  <div className="flex items-center justify-between border-b border-blue-200 pb-2 mb-4 mt-6">
+                    <h3 className="text-lg font-semibold text-blue-600">Technical Credentials</h3>
+                    <button type="button" onClick={() => handleAddOption('crlsOptions', 'Certification')} className="text-[10px] font-bold text-blue-600 hover:underline">+ New Type</button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  <div className="flex flex-wrap gap-2 mb-6">
                     {formOptions.crlsOptions.map((option: string) => (
-                      <div key={option} className="flex items-center justify-between p-3 rounded-2xl border-2 border-slate-200 bg-slate-100 hover:border-blue-200 hover:bg-white transition-all group">
-                        <label className="flex items-center space-x-3 cursor-pointer w-full">
-                          <input type="checkbox" className="w-5 h-5 text-blue-600 rounded-lg border-slate-300 focus:ring-blue-500" checked={formData.crls_options?.includes(option) || false}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              setFormData(prev => ({
-                                ...prev, crls_options: isChecked ? [...(prev.crls_options || []), option] : (prev.crls_options || []).filter(item => item !== option)
-                              }));
-                            }}
-                          />
-                          <span className="text-slate-700 font-bold text-sm">{option}</span>
-                        </label>
-                        <button type="button" onClick={() => handleDeleteOption('crlsOptions', 'Certification', option, 'crls_options')} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− (Del)</button>
+                      <div key={option} className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 transition-all">
+                        <input type="checkbox" className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" checked={formData.crls_options?.includes(option) || false}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            setFormData(prev => ({
+                              ...prev, crls_options: isChecked ? [...(prev.crls_options || []), option] : (prev.crls_options || []).filter(item => item !== option)
+                            }));
+                          }}
+                        />
+                        <span className="text-gray-700 font-medium text-sm">{option}</span>
+                        <button type="button" onClick={() => handleDeleteOption('crlsOptions', 'Certification', option, 'crls_options')} className="text-[10px] font-bold text-red-500 hover:text-red-700 ml-1">×</button>
                       </div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CR No.</label>
-                        <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: [...p.cr_nos, '']}))} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+ Add New</button>
+                        <label className="block text-sm font-medium text-gray-700">CR Numbers</label>
+                        <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: [...p.cr_nos, '']}))} className="text-[10px] font-bold text-blue-600 hover:underline">+ Add Entry</button>
                       </div>
                       {formData.cr_nos.map((val: string, i: number) => (
                         <div key={i} className="flex gap-2">
-                          <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'cr_nos')} />
-                          {formData.cr_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: p.cr_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 px-3 hover:bg-red-50 rounded-xl transition-colors font-black">−</button>}
+                          <input className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'cr_nos')} />
+                          {formData.cr_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, cr_nos: p.cr_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 hover:text-red-700 font-bold px-1">×</button>}
                         </div>
                       ))}
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">LS No.</label>
-                        <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: [...p.ls_nos, '']}))} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+ Add New</button>
+                        <label className="block text-sm font-medium text-gray-700">LS Numbers</label>
+                        <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: [...p.ls_nos, '']}))} className="text-[10px] font-bold text-blue-600 hover:underline">+ Add Entry</button>
                       </div>
                       {formData.ls_nos.map((val: string, i: number) => (
                         <div key={i} className="flex gap-2">
-                          <input className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'ls_nos')} />
-                          {formData.ls_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: p.ls_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 px-3 hover:bg-red-50 rounded-xl transition-colors font-black">−</button>}
+                          <input className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={val} onChange={(e) => handleArrayInput(i, e.target.value, 'ls_nos')} />
+                          {formData.ls_nos.length > 1 && <button type="button" onClick={() => setFormData(p => ({...p, ls_nos: p.ls_nos.filter((_, idx) => idx !== i)}))} className="text-red-500 hover:text-red-700 font-bold px-1">×</button>}
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
-                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    Location Details
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Province</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddLocation('Province')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.prov && <button type="button" onClick={() => handleDeleteLocation('Province', formData.prov)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                {/* Location Mapping */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 border-b border-blue-200 pb-2 mb-4 mt-6">Location Mapping</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Province</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddLocation('Province')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.prov && <button type="button" onClick={() => handleDeleteLocation('Province', formData.prov)} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select required className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer text-slate-700" value={formData.prov} onChange={e => setFormData({...formData, prov: e.target.value, mun_city: '', street_brgy: ''})}>
+                      <select required className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.prov} onChange={e => setFormData({...formData, prov: e.target.value, mun_city: '', street_brgy: ''})}>
                         <option value="" disabled>Select Province...</option>
                         {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Municipality / City</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddLocation('City')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.mun_city && <button type="button" onClick={() => handleDeleteLocation('City', formData.mun_city)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">City / Municipality</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddLocation('City')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.mun_city && <button type="button" onClick={() => handleDeleteLocation('City', formData.mun_city)} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select required disabled={!formData.prov} className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer disabled:opacity-50 text-slate-700" value={formData.mun_city} onChange={e => setFormData({...formData, mun_city: e.target.value, street_brgy: ''})}>
-                        <option value="" disabled>Select City/Mun...</option>
+                      <select required disabled={!formData.prov} className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800 disabled:opacity-50" value={formData.mun_city} onChange={e => setFormData({...formData, mun_city: e.target.value, street_brgy: ''})}>
+                        <option value="" disabled>Select City...</option>
                         {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center pr-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Barangay</label>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleAddLocation('Barangay')} className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">+ Add</button>
-                          {formData.street_brgy && <button type="button" onClick={() => handleDeleteLocation('Barangay', formData.street_brgy)} className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">− Del</button>}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Barangay</label>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => handleAddLocation('Barangay')} className="text-[10px] font-bold text-blue-600 hover:underline">Add</button>
+                          {formData.street_brgy && <button type="button" onClick={() => handleDeleteLocation('Barangay', formData.street_brgy)} className="text-[10px] font-bold text-red-500 hover:underline">Del</button>}
                         </div>
                       </div>
-                      <select required disabled={!formData.mun_city} className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer disabled:opacity-50 text-slate-700" value={formData.street_brgy} onChange={e => setFormData({...formData, street_brgy: e.target.value})}>
+                      <select required disabled={!formData.mun_city} className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800 disabled:opacity-50" value={formData.street_brgy} onChange={e => setFormData({...formData, street_brgy: e.target.value})}>
                         <option value="" disabled>Select Barangay...</option>
                         {availableBarangays.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
@@ -474,59 +461,46 @@ const ProjectFormModal = ({
                   </div>
                 </div>
 
-                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
-                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Timelines
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Filed</label>
-                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_filed || ''} onChange={e => setFormData({...formData, date_filed: e.target.value})} />
+                {/* Processing Timeline */}
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-600 border-b border-blue-200 pb-2 mb-4 mt-6">Processing Timeline</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Filed</label>
+                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_filed || ''} onChange={e => setFormData({...formData, date_filed: e.target.value})} />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Issued</label>
-                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_issued || ''} onChange={e => setFormData({...formData, date_issued: e.target.value})} />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
+                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_issued || ''} onChange={e => setFormData({...formData, date_issued: e.target.value})} />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Date Completion</label>
-                      <input type="date" className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700" value={formData.date_completion || ''} onChange={e => setFormData({...formData, date_completion: e.target.value})} />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Completion</label>
+                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_completion || ''} onChange={e => setFormData({...formData, date_completion: e.target.value})} />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 sm:p-7 rounded-[20px] border border-slate-200 shadow-sm">
-                  <h4 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                    Attachments
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="p-6 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3">
-                      <input type="file" className="hidden" id="drive-upload" onChange={(e) => { if(e.target.files && e.target.files[0]) { setUploadFile(e.target.files[0]); showNotification("File selected for upload", "info"); } }} />
-                      <label htmlFor="drive-upload" className="flex flex-col items-center cursor-pointer group">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-all shadow-sm mb-2">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                        </div>
-                        <span className="font-bold text-slate-700">Upload to Google Drive</span>
-                        <p className="text-xs text-slate-400 font-medium mt-1">Files will be automatically sorted into the '{formData.status_of_application}' folder in Drive.</p>
-                      </label>
-                    </div>
-                  </div>
+                {/* Modal Footer Buttons */}
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 pb-2">
+                  <button type="button" onClick={onClose} className="px-6 py-2 text-sm font-semibold text-slate-600 border border-slate-300 rounded-md hover:bg-slate-50 transition-all">Cancel</button>
+                  <button type="submit" className="px-8 py-2 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-md transition-all active:scale-95">
+                    {appToEdit ? 'Save Changes' : 'Create Project'}
+                  </button>
                 </div>
               </form>
             ) : (
-              <div className="space-y-8 py-4 animate-in slide-in-from-bottom-4 duration-300">
+              <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-300">
                 {previewData.length > 0 ? (
-                  <div className="bg-white rounded-[20px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[65vh]">
+                  <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[60vh]">
                     <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                       <div>
-                        <h4 className="text-lg font-black text-slate-800">Preview Data</h4>
-                        <p className="text-slate-500 text-sm font-medium mt-0.5">Found <span className="text-emerald-600 font-bold">{previewData.length} valid</span> records.</p>
+                        <h4 className="text-lg font-bold text-gray-800">Preview Import Data</h4>
+                        <p className="text-gray-500 text-sm font-medium mt-0.5">Ready to upload <span className="text-emerald-600 font-bold">{previewData.length} valid</span> records.</p>
                       </div>
                       <div className="flex gap-3">
-                        <button onClick={() => setPreviewData([])} className="px-4 py-2 text-slate-600 bg-white border border-slate-300 rounded-xl font-bold text-sm" disabled={isUploading}>Cancel</button>
-                        <button onClick={confirmBulkUpload} disabled={isUploading} className="px-4 py-2 bg-blue-600 text-white rounded-xl font-black text-sm">
-                          {isUploading ? 'Uploading...' : 'Confirm Upload'}
+                        <button onClick={() => setPreviewData([])} className="px-4 py-2 text-slate-600 bg-white border border-slate-300 rounded-md font-bold text-sm" disabled={isUploading}>Cancel</button>
+                        <button onClick={confirmBulkUpload} disabled={isUploading} className="px-4 py-2 bg-blue-600 text-white rounded-md font-black text-sm">
+                          {isUploading ? 'Processing...' : 'Start Import'}
                         </button>
                       </div>
                     </div>
@@ -535,12 +509,12 @@ const ProjectFormModal = ({
                         <thead className="bg-slate-50 sticky top-0">
                           <tr>
                             <th className="px-4 py-2 font-bold text-slate-600 border-b">Project Name</th>
-                            <th className="px-4 py-2 font-bold text-slate-600 border-b">Location</th>
+                            <th className="px-4 py-2 font-bold text-slate-600 border-b">City/Mun, Province</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {previewData.slice(0, 50).map((row, i) => (
-                            <tr key={i} className="hover:bg-slate-50/50">
+                            <tr key={i} className="hover:bg-slate-50 transition-all">
                               <td className="px-4 py-2 font-bold text-slate-800">{row['Name of Proj'] || 'Untitled'}</td>
                               <td className="px-4 py-2 text-slate-600">{row['Mun/City']}, {row['Prov']}</td>
                             </tr>
@@ -552,25 +526,25 @@ const ProjectFormModal = ({
                 ) : (
                   <div className="space-y-6">
                     <div onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop}
-                      className={`relative group h-[40vh] border-4 border-dashed rounded-[32px] transition-all flex flex-col items-center justify-center gap-5 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                      className={`relative group h-[40vh] border-2 border-dashed rounded-xl transition-all flex flex-col items-center justify-center gap-5 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'}`}
                     >
                       <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".csv,.xlsx" onChange={(e) => { if(e.target.files && e.target.files[0]) processImportFile(e.target.files[0]); }} />
-                      <div className={`w-20 h-20 rounded-[24px] flex items-center justify-center transition-all ${isDragging ? 'bg-blue-500 text-white scale-110 shadow-xl' : 'bg-slate-100 text-slate-400 group-hover:text-blue-500'}`}>
-                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isDragging ? 'bg-blue-500 text-white scale-110 shadow-lg' : 'bg-slate-100 text-slate-400 group-hover:text-blue-500'}`}>
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                       </div>
                       <div className="text-center">
-                        <p className="text-xl font-black text-slate-800">Upload Database</p>
-                        <p className="text-slate-500 font-medium text-sm mt-2">Drag and drop .csv or .xlsx file here</p>
+                        <p className="text-xl font-bold text-gray-800">Bulk Database Upload</p>
+                        <p className="text-gray-500 font-medium text-sm mt-2">Drop your .csv or .xlsx file here to begin</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <button onClick={() => { handleExport('csv'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-3xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group shadow-sm">
+                      <button onClick={() => { handleExport('csv'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all group shadow-sm">
                         <svg className="w-8 h-8 mb-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        <span className="font-black text-slate-800">Export as CSV</span>
+                        <span className="font-bold text-gray-800">Download Template (CSV)</span>
                       </button>
-                      <button onClick={() => { handleExport('xlsx'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-3xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group shadow-sm">
+                      <button onClick={() => { handleExport('xlsx'); onClose(); }} className="flex flex-col items-center p-6 bg-white rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group shadow-sm">
                         <svg className="w-8 h-8 mb-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        <span className="font-black text-slate-800">Export as Excel</span>
+                        <span className="font-bold text-gray-800">Download Template (Excel)</span>
                       </button>
                     </div>
                   </div>
@@ -578,24 +552,18 @@ const ProjectFormModal = ({
               </div>
             )}
           </div>
-          
-          {activeTab === 'form' && (
-            <div className="px-6 sm:px-8 py-4 sm:py-6 border-t border-slate-200 bg-white flex justify-end gap-3 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-              <button onClick={onClose} className="px-6 py-3 text-slate-500 hover:text-slate-700 font-bold transition-colors text-sm sm:text-base">Discard</button>
-              <button type="submit" form="app-form" className="px-8 py-3 sm:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95 text-sm sm:text-base">
-                {appToEdit ? 'Save Changes' : 'Confirm Entry'}
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
       {promptDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[120]">
-          <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95">
-             <h3 className="text-xl font-black text-slate-800 text-center mb-6">{promptDialog.title}</h3>
-             <input autoFocus className="w-full mb-6 border-2 border-slate-100 rounded-2xl px-5 py-4 bg-slate-50 font-bold outline-none focus:border-blue-500" value={promptValue} onChange={(e) => setPromptValue(e.target.value)} />
-             <button onClick={() => { promptDialog.action?.(promptValue); setPromptDialog({ ...promptDialog, show: false }); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black">Save</button>
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[1000]">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95">
+             <h3 className="text-xl font-bold text-gray-800 text-center mb-6">{promptDialog.title}</h3>
+             <input autoFocus className="w-full mb-6 border border-slate-300 rounded-md px-4 py-3 bg-slate-50 font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value={promptValue} onChange={(e) => setPromptValue(e.target.value)} />
+             <div className="flex gap-2">
+                <button onClick={() => setPromptDialog({ ...promptDialog, show: false })} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-md transition-all">Cancel</button>
+                <button onClick={() => { promptDialog.action?.(promptValue); setPromptDialog({ ...promptDialog, show: false }); }} className="flex-1 py-3 bg-blue-600 text-white rounded-md font-black shadow-md hover:bg-blue-700 transition-all">Save Option</button>
+             </div>
           </div>
         </div>
       )}

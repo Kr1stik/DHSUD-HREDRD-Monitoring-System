@@ -79,3 +79,9 @@ export const initialNirLocations: Record<string, Record<string, string[]>> = {
     "Enrique Villanueva": ["Balolong", "Bino-ongan", "Bitaug", "Bolot", "Camogao", "Cangmangki", "Libo", "Lomangcapan", "Lotloton", "Manan-ao", "Olave", "Parian", "Poblacion", "Tulapos"]
   }
 };
+
+export const nirLocations = { 
+  "Negros Occidental": ["Bacolod City", "Bago City", "Cadiz City", "Escalante City", "Himamaylan City", "Kabankalan City", "La Carlota City", "Sagay City", "San Carlos City", "Silay City", "Sipalay City", "Talisay City", "Victorias City", "Ilog", "Cauayan", "Hinigaran", "Binalbagan"], 
+  "Negros Oriental": ["Dumaguete City", "Bais City", "Bayawan City", "Canlaon City", "Guihulngan City", "Tanjay City"], 
+  "Siquijor": ["Siquijor", "Larena", "Lazi"] 
+};

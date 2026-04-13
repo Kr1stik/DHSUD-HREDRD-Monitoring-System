@@ -6,3 +6,4 @@ Django==6.0.2
 python-dotenv
 whitenoise
 waitress
+Pillow

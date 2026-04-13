@@ -1,0 +1,18 @@
+You are a Senior Django Developer fixing a Vite React production build deployment. The browser is throwing MIME type 'text/html' errors because Django is returning a 404 HTML page instead of the requested CSS/JS static files.
+
+FILES TO AUDIT:
+- housingProject/settings.py
+- housingProject/urls.py
+
+REQUIRED ACTIONS:
+1. UPDATE `settings.py`:
+   - Locate the Static files section (where `STATIC_URL` is defined).
+   - Add or update `STATICFILES_DIRS` to explicitly point to the React Vite build output. Assuming the frontend is in a folder named 'frontend', it should look like:
+     `STATICFILES_DIRS = [ os.path.join(BASE_DIR, 'frontend', 'dist') ]`
+     (If the user's React build outputs to a different location, audit the folder structure and point it there).
+   - Ensure `STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')` is also set.
+2. UPDATE `housingProject/urls.py`:
+   - Ensure `re_path` or a catch-all route is set up to serve the React `index.html` for any routes that don't match `/api/` or `/admin/`.
+   - Ensure static files are being served properly in the URLs.
+
+OUTPUT: Provide the exact updated sections for both files.

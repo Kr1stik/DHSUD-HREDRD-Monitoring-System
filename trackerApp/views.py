@@ -4,11 +4,11 @@ from datetime import datetime
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils import timezone
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import ProjectApplication
-from .serializers import ProjectApplicationSerializer
+from .models import ProjectApplication, Salesperson
+from .serializers import ProjectApplicationSerializer, SalespersonSerializer
 from .drive_service import upload_to_drive, get_connected_account, get_drive_service
 from django.http import JsonResponse
 
@@ -22,16 +22,12 @@ def bulk_action_projects(request):
         
     projects = ProjectApplication.objects.filter(id__in=ids)
     
-    if action == 'archive':
+    if action == 'archive' or action == 'delete':
         projects.update(status_of_application='Archived', date_archived=timezone.now())
         return Response({'status': 'success', 'message': f'Archived {projects.count()} projects'})
     elif action == 'restore':
         projects.update(status_of_application='Ongoing', date_archived=None)
         return Response({'status': 'success', 'message': f'Restored {projects.count()} projects'})
-    elif action == 'delete':
-        count = projects.count()
-        projects.delete()
-        return Response({'status': 'success', 'message': f'Deleted {count} projects'})
         
     return Response({'status': 'error', 'message': 'Invalid action'}, status=400)
 
@@ -161,3 +157,10 @@ def reset_google_connection(request):
         return Response({'status': 'info', 'message': 'No active connection found.'})
     except Exception as e:
         return Response({'status': 'error', 'message': str(e)}, status=500)
+
+class SalespersonViewSet(viewsets.ModelViewSet):
+    queryset = Salesperson.objects.all()
+    serializer_class = SalespersonSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['first_name', 'last_name', 'middle_name', 'prn', 'prc_accre_no']
+    ordering_fields = ['last_name', 'date_filed', 'date_of_registration']

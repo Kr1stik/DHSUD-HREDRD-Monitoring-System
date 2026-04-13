@@ -85,21 +85,29 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
         </div>
       </div>
 
-      {/* BULK ACTION BAR - Only appears if at least 1 item is checked */}
+      {/* BULK ACTION BAR - Minimal Design */}
       {selectedItems.length > 0 && (
-        <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300 shadow-xl shadow-slate-900/20">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-black text-sm">{selectedItems.length}</div>
-            <p className="font-bold text-sm sm:text-base tracking-tight">{selectedItems.length} items selected</p>
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-slate-200 p-3 mb-4 rounded-xl shadow-sm w-full animate-in fade-in">
+          <div className="flex items-center gap-3 mb-3 sm:mb-0">
+            <span className="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-lg text-sm">{selectedItems.length}</span>
+            <span className="text-slate-600 font-bold text-sm">Items Selected</span>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2">
             {currentView === 'active' ? (
-              <button onClick={() => handleBulkAction('archive')} className="flex-1 sm:flex-none px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Archive Selected</button>
+              <button onClick={() => handleBulkAction('archive')} className="flex items-center gap-2 px-3 py-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg text-sm font-bold transition-all">
+                <ArchiveIcon /> Archive
+              </button>
             ) : (
-              <button onClick={() => handleBulkAction('restore')} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Restore Selected</button>
+              <button onClick={() => handleBulkAction('restore')} className="flex items-center gap-2 px-3 py-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm font-bold transition-all">
+                <RestoreIcon /> Restore
+              </button>
             )}
-            <button onClick={() => handleBulkAction('delete')} className="flex-1 sm:flex-none px-4 py-2 bg-red-500 hover:bg-red-600 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Delete Selected</button>
-            <button onClick={() => setSelectedItems([])} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl font-black text-xs uppercase tracking-widest transition-all">Cancel</button>
+            <button onClick={() => handleBulkAction('delete')} className="flex items-center gap-2 px-3 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg text-sm font-bold transition-all">
+              <TrashIcon /> Delete
+            </button>
+            <button onClick={() => setSelectedItems([])} className="flex items-center gap-2 px-3 py-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg text-sm font-bold transition-all">
+              Cancel
+            </button>
           </div>
         </div>
       )}

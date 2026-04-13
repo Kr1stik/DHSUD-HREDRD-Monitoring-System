@@ -73,6 +73,63 @@ class ProjectApplication(models.Model):
 
 class SystemSettings(models.Model):
     last_cloud_sync = models.DateTimeField(null=True, blank=True)
-    
+
     def __clstr__(self):
         return "System Settings"
+
+class Salesperson(models.Model):
+    # Personal Info
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100)
+    suffix = models.CharField(max_length=10, blank=True, null=True)
+    sex = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])
+    tin = models.CharField(max_length=50, blank=True, null=True)
+    phone_no = models.CharField(max_length=50, blank=True, null=True)
+
+    # Address Info
+    address_street = models.CharField(max_length=255, blank=True, null=True)
+    city_municipality = models.CharField(max_length=100, blank=True, null=True)
+    province = models.CharField(max_length=100, default='Negros Occidental')
+
+    # PRC & Registration
+    prc_accre_no = models.CharField(max_length=100, blank=True, null=True)
+    sp_prc_reg_validity = models.DateField(blank=True, null=True)
+    sn_certificate_of_reg = models.CharField(max_length=100, blank=True, null=True)
+    prn = models.CharField(max_length=100, blank=True, null=True)
+
+    # Broker Details
+    broker_prn = models.CharField(max_length=100, blank=True, null=True)
+    broker_name = models.CharField(max_length=255, blank=True, null=True)
+    broker_date_of_reg = models.DateField(blank=True, null=True)
+    broker_place_of_reg = models.CharField(max_length=255, blank=True, null=True)
+
+    # Payment/Bond
+    or_no_registration = models.CharField(max_length=100, blank=True, null=True)
+    amount_reg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    or_date = models.DateField(blank=True, null=True)
+    surety_bond_validity = models.DateField(blank=True, null=True)
+    or_no_cash_bond = models.CharField(max_length=100, blank=True, null=True)
+    amount_cb = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    # System Dates
+    date_filed = models.DateField(blank=True, null=True)
+    date_of_registration = models.DateField(blank=True, null=True)
+    date_released = models.DateField(blank=True, null=True)
+    released_year = models.IntegerField(blank=True, null=True)
+
+    # Application Type
+    is_renewal = models.BooleanField(default=False)
+
+    # Valid Years
+    valid_years = models.JSONField(default=list, blank=True, null=True)
+
+    note = models.TextField(blank=True)
+    photo = models.ImageField(upload_to='salesperson_photos/', null=True, blank=True)
+
+    date_archived = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"

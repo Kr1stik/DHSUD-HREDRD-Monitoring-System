@@ -1,9 +1,18 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProjectApplicationViewSet, trigger_cloud_backup, reset_google_connection, google_connection_status, connect_google_account, bulk_action_projects
+from .views import (
+    ProjectApplicationViewSet, 
+    SalespersonViewSet,
+    trigger_cloud_backup, 
+    reset_google_connection, 
+    google_connection_status, 
+    connect_google_account, 
+    bulk_action_projects
+)
 
 router = DefaultRouter()
 router.register(r'applications', ProjectApplicationViewSet)
+router.register(r'salespersons', SalespersonViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

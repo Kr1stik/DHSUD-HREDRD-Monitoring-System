@@ -1,12 +1,12 @@
 import React from 'react';
 import { 
   NavDashboardIcon, NavFolderIcon, NavArchiveIcon, NavAboutIcon, 
-  HelpIcon 
+  HelpIcon, UsersIcon
 } from './Icons';
 
 interface SidebarProps {
-  currentView: 'dashboard' | 'active' | 'archive' | 'cloud' | 'about';
-  setCurrentView: (view: 'dashboard' | 'active' | 'archive' | 'cloud' | 'about') => void;
+  currentView: 'dashboard' | 'active' | 'archive' | 'cloud' | 'about' | 'salespersons';
+  setCurrentView: (view: 'dashboard' | 'active' | 'archive' | 'cloud' | 'about' | 'salespersons') => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
   setShowHelp: (show: boolean) => void;
@@ -16,7 +16,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentView, 
   setCurrentView, 
   isSidebarOpen, 
-  setIsSidebarOpen, 
   setShowHelp 
 }) => {
   return (
@@ -35,6 +34,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
         <button onClick={() => setCurrentView('active')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'active' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
           <NavFolderIcon /> Projects
+        </button>
+        <button onClick={() => setCurrentView('salespersons')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'salespersons' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'}`}>
+          <UsersIcon /> Salespersons
         </button>
         
         <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data Management</p>
