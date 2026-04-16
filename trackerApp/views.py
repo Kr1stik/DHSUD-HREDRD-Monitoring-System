@@ -158,9 +158,43 @@ def reset_google_connection(request):
     except Exception as e:
         return Response({'status': 'error', 'message': str(e)}, status=500)
 
+@api_view(['GET'])
+def dashboard_stats(request):
+    today = timezone.now()
+    
+    # Count active projects (not archived)
+    total_projects = ProjectApplication.objects.exclude(status_of_application='Archived').count()
+    
+    # Count active salespersons (not archived)
+    total_salespersons = Salesperson.objects.filter(date_archived__isnull=True).count()
+    
+    # Count salespersons added this month
+    new_salespersons_this_month = Salesperson.objects.filter(
+        date_archived__isnull=True, 
+        date_filed__year=today.year, 
+        date_filed__month=today.month
+    ).count()
+    
+    return Response({
+        'total_projects': total_projects,
+        'total_salespersons': total_salespersons,
+        'new_salespersons_this_month': new_salespersons_this_month
+    })
+
 class SalespersonViewSet(viewsets.ModelViewSet):
     queryset = Salesperson.objects.all()
     serializer_class = SalespersonSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['first_name', 'last_name', 'middle_name', 'prn', 'prc_accre_no']
+    search_fields = ['first_name', 'last_name', 'middle_name', 'prn', 'prc_accre_no', 'broker_first_name', 'broker_last_name']
     ordering_fields = ['last_name', 'date_filed', 'date_of_registration']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        archived = self.request.query_params.get('archived')
+        if archived is not None:
+            is_archived = archived.lower() == 'true'
+            if is_archived:
+                queryset = queryset.filter(date_archived__isnull=False)
+            else:
+                queryset = queryset.filter(date_archived__isnull=True)
+        return queryset

@@ -1,14 +1,17 @@
 import { useEffect, useState, useMemo } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import * as XLSX from 'xlsx';
 
 import Sidebar from './components/Sidebar';
+import logo from './assets/DHSUD_LOGO.png';
 import ProjectFormModal from './components/ProjectFormModal';
 import SalespersonFormModal from './components/SalespersonFormModal';
 import Dashboard from './components/Dashboard';
 import CloudBackup from './components/CloudBackup';
 import ProjectRegistry from './components/ProjectRegistry';
 import SalespersonRegistry from './components/SalespersonRegistry';
+import FloatingHelp from './components/FloatingHelp';
 import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
@@ -53,7 +56,7 @@ const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () 
         </div>
 
         <div className="flex items-center justify-center gap-6 mb-8 border-b-4 border-slate-900 pb-6">
-          <img src="/static/trackerApp/DHSUD_LOGO.png" alt="Logo" className="w-20 h-20 object-contain" />
+          <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
           <div className="text-center">
             <h2 className="text-xl font-black uppercase text-slate-800 leading-tight">Republic of the Philippines</h2>
             <h1 className="text-2xl font-black uppercase text-slate-900 leading-tight">Department of Human Settlements and Urban Development</h1>
@@ -110,28 +113,25 @@ const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () 
               <p className="text-[10px] font-bold text-slate-500 uppercase">DHSUD NIR</p>
            </div>
         </div>
-
-        <div className="mt-20 border-t border-slate-200 pt-4 hidden print:block">
-           <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-              <span>DHSUD-NIR-HREDRD-v1.0</span>
-              <span>Generated via Monitoring System | {new Date().toLocaleString()}</span>
-           </div>
-        </div>
       </div>
     </div>
   );
 };
 
 // ==========================================
-// MAIN APP COMPONENT
+// MAIN APP CONTENT
 // ==========================================
-export default function App() {
+function AppContent() {
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('')
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'active' | 'archive' | 'cloud' | 'about' | 'salespersons'>('dashboard')
+  const [archiveTab, setArchiveTab] = useState<'projects' | 'salespersons'>('projects');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   
+  const [salespersonRefreshKey, setSalespersonRefreshKey] = useState(0);
+  const handleRefreshSalespersons = () => setSalespersonRefreshKey(prev => prev + 1);
+
   const [salespersonModalConfig, setSalespersonModalConfig] = useState<{
     isOpen: boolean;
     mode: 'create' | 'edit' | 'view';
@@ -152,6 +152,11 @@ export default function App() {
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [isBulkMode, setIsBulkMode] = useState(false)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const [dashboardStats, setDashboardStats] = useState({
+    total_projects: 0,
+    total_salespersons: 0,
+    new_salespersons_this_month: 0
+  });
   
   const [syncFolder, setSyncFolder] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -160,10 +165,6 @@ export default function App() {
 
   // 🛡️ SECURITY: Detect if current user is on LAN instead of the Main Server PC
   const isRemote = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-
-  // State to trigger refresh in child component
-  const [salespersonRefreshKey, setSalespersonRefreshKey] = useState(0);
-  const handleRefreshSalespersons = () => setSalespersonRefreshKey(prev => prev + 1);
 
   const checkGoogleStatus = () => {
     setIsCheckingStatus(true);
@@ -190,6 +191,12 @@ export default function App() {
   const requestConfirm = (title: string, message: string, action: () => void, confirmText: string, confirmColor: string) => {
     setConfirmDialog({ show: true, title, message, action, confirmText, confirmColor });
   }
+
+  const fetchDashboardStats = () => {
+    axios.get('/api/dashboard-stats/')
+      .then(res => setDashboardStats(res.data))
+      .catch(() => console.error("Failed to load dashboard stats"));
+  };
 
   const fetchApplications = (silent: boolean = false) => {
     if (!silent) setIsLoading(true);
@@ -236,6 +243,7 @@ export default function App() {
 
   useEffect(() => { 
     fetchApplications();
+    fetchDashboardStats();
     checkGoogleStatus();
   }, [])
 
@@ -243,15 +251,12 @@ export default function App() {
     setSelectedItems([]);
     setIsBulkMode(false);
     setCurrentPage(1); 
-    setIsSidebarOpen(false); // Close sidebar on view change (mobile)
-
-  }, [currentView, searchTerm]);
+    setIsSidebarOpen(false); 
+  }, [location.pathname, searchTerm]);
 
   const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
   const archivedApps = applications.filter(app => app.status_of_application === 'Archived')
-  const displayApps = currentView === 'active' ? activeApps : archivedApps
-
-  // PERFORMANCE: Memoize stats to prevent recalculation on every render
+  
   const stats = useMemo(() => ({
     ongoing: activeApps.filter(a => a.status_of_application === 'Ongoing').length,
     approved: activeApps.filter(a => a.status_of_application === 'Approved').length,
@@ -291,6 +296,8 @@ export default function App() {
     }
     return result;
   }, [pieChartDataRaw]);
+
+  const displayApps = location.pathname.includes('/archives') ? archivedApps : activeApps;
 
   const filteredApps = useMemo(() => displayApps.filter(app => {
     return app.name_of_proj.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -388,15 +395,25 @@ export default function App() {
 
   const [showChartModal, setShowChartModal] = useState<{show: boolean, title: string, data: any[]}>({show: false, title: '', data: []});
 
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/projects') return 'Projects';
+    if (path === '/archives') return 'Archives';
+    if (path === '/salespersons') return 'Salespersons';
+    if (path === '/cloud-backup') return 'Cloud Backup';
+    if (path === '/about') return 'About';
+    return 'Dashboard';
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 relative overflow-x-hidden">
       
       {/* MOBILE HEADER */}
       <header className="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
         <div className="flex items-center gap-3 overflow-hidden">
-          <img src="/static/trackerApp/DHSUD_LOGO.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
+          <img src={logo} alt="Logo" className="w-8 h-8 object-contain shrink-0" />
           <span className="font-black tracking-tight truncate text-lg">
-            {currentView === 'active' ? 'Projects' : currentView === 'archive' ? 'Archives' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+            {getPageTitle()}
           </span>
         </div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-800 rounded-lg shrink-0">
@@ -427,8 +444,6 @@ export default function App() {
 
       {/* SIDEBAR NAVIGATION */}
       <Sidebar 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
         isSidebarOpen={isSidebarOpen} 
         setIsSidebarOpen={setIsSidebarOpen} 
         setShowHelp={setShowHelp} 
@@ -438,107 +453,161 @@ export default function App() {
       <main className={`flex-1 p-4 sm:p-8 md:ml-64 mt-16 md:mt-0 transition-all duration-300 flex flex-col`}>
         <div className="max-w-6xl mx-auto w-full">
           
-          {currentView === 'dashboard' && (
-            <Dashboard 
-              stats={stats} 
-              chartData={chartData} 
-              pieChartDataRaw={pieChartDataRaw} 
-              pieChartData={pieChartData} 
-              COLORS={COLORS} 
-              setShowChartModal={setShowChartModal} 
-            />
-          )}
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={
+              <Dashboard 
+                stats={stats} 
+                backendStats={dashboardStats}
+                chartData={chartData} 
+                pieChartDataRaw={pieChartDataRaw} 
+                pieChartData={pieChartData} 
+                COLORS={COLORS} 
+                setShowChartModal={setShowChartModal} 
+              />
+            } />
+            <Route path="/projects" element={
+              <ProjectRegistry 
+                currentView="active"
+                isBulkMode={isBulkMode}
+                setIsBulkMode={setIsBulkMode}
+                selectedItems={selectedItems}
+                setSelectedItems={setSelectedItems}
+                paginatedApps={paginatedApps}
+                setShowReport={setShowReport}
+                setEditingApp={setEditingApp}
+                setIsModalOpen={setIsModalOpen}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                handleBulkAction={handleBulkAction}
+                isLoading={isLoading}
+                handleSelectAll={handleSelectAll}
+                toggleSelection={toggleSelection}
+                setViewingApp={setViewingApp}
+                getStatusBadge={getStatusBadge}
+                handleSoftDelete={handleSoftDelete}
+                handleRestore={handleRestore}
+                handleHardDelete={handleHardDelete}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
+            } />
+            <Route path="/salespersons" element={
+              <SalespersonRegistry 
+                key={salespersonRefreshKey}
+                onAdd={() => {
+                  setSalespersonModalConfig({ isOpen: true, mode: 'create', data: null });
+                }}
+                onEdit={(sp) => {
+                  setSalespersonModalConfig({ isOpen: true, mode: 'edit', data: sp });
+                }}
+                onView={(sp) => {
+                  setSalespersonModalConfig({ isOpen: true, mode: 'view', data: sp });
+                }}
+                showNotification={showNotification}
+                requestConfirm={requestConfirm}
+                searchTerm={searchTerm}
+              />
+            } />
+            <Route path="/archives" element={
+              <div className="space-y-6">
+                <div className="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg w-fit">
+                  <button 
+                    onClick={() => setArchiveTab('projects')} 
+                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${archiveTab === 'projects' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Archived Projects
+                  </button>
+                  <button 
+                    onClick={() => setArchiveTab('salespersons')} 
+                    className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${archiveTab === 'salespersons' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Archived Salespersons
+                  </button>
+                </div>
 
-          {(currentView === 'active' || currentView === 'archive') && (
-            <ProjectRegistry 
-              currentView={currentView}
-              isBulkMode={isBulkMode}
-              setIsBulkMode={setIsBulkMode}
-              selectedItems={selectedItems}
-              setSelectedItems={setSelectedItems}
-              paginatedApps={paginatedApps}
-              setShowReport={setShowReport}
-              setEditingApp={setEditingApp}
-              setIsModalOpen={setIsModalOpen}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              handleBulkAction={handleBulkAction}
-              isLoading={isLoading}
-              handleSelectAll={handleSelectAll}
-              toggleSelection={toggleSelection}
-              setViewingApp={setViewingApp}
-              getStatusBadge={getStatusBadge}
-              handleSoftDelete={handleSoftDelete}
-              handleRestore={handleRestore}
-              handleHardDelete={handleHardDelete}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              setCurrentPage={setCurrentPage}
-            />
-          )}
-
-          {currentView === 'salespersons' && (
-            <SalespersonRegistry 
-              key={salespersonRefreshKey}
-              onAdd={() => {
-                setSalespersonModalConfig({ isOpen: true, mode: 'create', data: null });
-              }}
-              onEdit={(sp) => {
-                setSalespersonModalConfig({ isOpen: true, mode: 'edit', data: sp });
-              }}
-              onView={(sp) => {
-                setSalespersonModalConfig({ isOpen: true, mode: 'view', data: sp });
-              }}
-              showNotification={showNotification}
-              requestConfirm={requestConfirm}
-            />
-          )}
-
-          {currentView === 'cloud' && (
-            <CloudBackup 
-              connectedEmail={connectedEmail}
-              isCheckingStatus={isCheckingStatus}
-              syncFolder={syncFolder}
-              setSyncFolder={setSyncFolder}
-              handleCloudSync={handleCloudSync}
-              isSyncing={isSyncing}
-              isRemote={isRemote}
-              setConnectedEmail={setConnectedEmail}
-              showNotification={showNotification}
-              requestConfirm={requestConfirm}
-            />
-          )}
-
-          {currentView === 'about' && (
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 space-y-8 animate-in fade-in">
-              <h1 className="text-3xl font-black text-slate-800">About System</h1>
-              <div className="space-y-4 text-slate-500 leading-relaxed text-lg">
-                <p>The Housing and Real Estate Development Regulation Division (HREDRD) Monitoring System is a dedicated digital platform designed to streamline the tracking and management of project applications, Certificates of Registration (CR), and Licenses to Sell (LS).</p>
-                <p>Purpose-built for the Negros Island Region, the system ensures local data integrity and provides real-time analytics for regional administrators to monitor the progress of housing developments and compliance entries.</p>
-                <p>The architecture leverages an offline-first, local area network (LAN) approach, allowing multiple employees to access and update records simultaneously without requiring a public internet connection, ensuring maximum security and speed for office operations.</p>
-                <p>Built with resilience in mind, this system features multi-user LAN support via PostgreSQL, automated daily local database snapshots, and secure Google Drive integration to ensure DHSUD data is never lost.</p>
+                {archiveTab === 'projects' ? (
+                  <ProjectRegistry 
+                    currentView="archive"
+                    isBulkMode={isBulkMode}
+                    setIsBulkMode={setIsBulkMode}
+                    selectedItems={selectedItems}
+                    setSelectedItems={setSelectedItems}
+                    paginatedApps={paginatedApps}
+                    setShowReport={setShowReport}
+                    setEditingApp={setEditingApp}
+                    setIsModalOpen={setIsModalOpen}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    handleBulkAction={handleBulkAction}
+                    isLoading={isLoading}
+                    handleSelectAll={handleSelectAll}
+                    toggleSelection={toggleSelection}
+                    setViewingApp={setViewingApp}
+                    getStatusBadge={getStatusBadge}
+                    handleSoftDelete={handleSoftDelete}
+                    handleRestore={handleRestore}
+                    handleHardDelete={handleHardDelete}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    setCurrentPage={setCurrentPage}
+                  />
+                ) : (
+                  <SalespersonRegistry 
+                    searchTerm={searchTerm} 
+                    isArchiveMode={true} 
+                    showNotification={showNotification}
+                    requestConfirm={requestConfirm}
+                  />
+                )}
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group">
-                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Lead Developer</p>
-                   <h3 className="text-2xl font-black text-slate-800 mb-4">Wenard Roy Barrera</h3>
-                   <a href="https://kr1stik.cosedevs.com/" target="_blank" className="inline-flex items-center gap-2 text-blue-600 font-black text-sm hover:gap-3 transition-all">
-                      View Portfolio
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                   </a>
+            } />
+            <Route path="/cloud-backup" element={
+              <CloudBackup 
+                connectedEmail={connectedEmail}
+                isCheckingStatus={isCheckingStatus}
+                syncFolder={syncFolder}
+                setSyncFolder={setSyncFolder}
+                handleCloudSync={handleCloudSync}
+                isSyncing={isSyncing}
+                isRemote={isRemote}
+                setConnectedEmail={setConnectedEmail}
+                showNotification={showNotification}
+                requestConfirm={requestConfirm}
+              />
+            } />
+            <Route path="/about" element={
+              <div className="bg-white p-8 rounded-3xl border border-slate-200 space-y-8 animate-in fade-in">
+                <h1 className="text-3xl font-black text-slate-800">About System</h1>
+                <div className="space-y-4 text-slate-500 leading-relaxed text-lg">
+                  <p>The Housing and Real Estate Development Regulation Division (HREDRD) Monitoring System is a dedicated digital platform designed to streamline the tracking and management of project applications, Certificates of Registration (CR), and Licenses to Sell (LS).</p>
+                  <p>Purpose-built for the Negros Island Region, the system ensures local data integrity and provides real-time analytics for regional administrators to monitor the progress of housing developments and compliance entries.</p>
+                  <p>The architecture leverages an offline-first, local area network (LAN) approach, allowing multiple employees to access and update records simultaneously without requiring a public internet connection, ensuring maximum security and speed for office operations.</p>
+                  <p>Built with resilience in mind, this system features multi-user LAN support via PostgreSQL, automated daily local database snapshots, and secure Google Drive integration to ensure DHSUD data is never lost.</p>
                 </div>
-                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
-                   <h3 className="text-xl font-black text-slate-800">John Eric Bayer</h3>
-                </div>
-                <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
-                   <h3 className="text-xl font-black text-slate-800">Jefferson Inere</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group">
+                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Lead Developer</p>
+                    <h3 className="text-2xl font-black text-slate-800 mb-4">Wenard Roy Barrera</h3>
+                    <a href="https://kr1stik.cosedevs.com/" target="_blank" className="inline-flex items-center gap-2 text-blue-600 font-black text-sm hover:gap-3 transition-all">
+                        View Portfolio
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    </a>
+                  </div>
+                  <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
+                    <h3 className="text-xl font-black text-slate-800">John Eric Bayer</h3>
+                  </div>
+                  <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Support</p>
+                    <h3 className="text-xl font-black text-slate-800">Jefferson Inere</h3>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            } />
+          </Routes>
         </div>
         <footer className="mt-auto py-6 text-center text-slate-400 font-bold text-xs tracking-widest uppercase">DHSUD | {new Date().getFullYear()}</footer>
       </main>
@@ -725,5 +794,14 @@ export default function App() {
       )}
 
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter basename="/HREDRD">
+      <FloatingHelp />
+      <AppContent />
+    </BrowserRouter>
   )
 }

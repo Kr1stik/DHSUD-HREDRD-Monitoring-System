@@ -7,7 +7,8 @@ from .views import (
     reset_google_connection, 
     google_connection_status, 
     connect_google_account, 
-    bulk_action_projects
+    bulk_action_projects,
+    dashboard_stats
 )
 
 router = DefaultRouter()
@@ -15,6 +16,7 @@ router.register(r'applications', ProjectApplicationViewSet)
 router.register(r'salespersons', SalespersonViewSet)
 
 urlpatterns = [
+    path('dashboard-stats/', dashboard_stats, name='dashboard-stats'),
     path('', include(router.urls)),
     path('projects/bulk-action/', bulk_action_projects, name='bulk_action'),
     path('backup/', trigger_cloud_backup, name='trigger_backup'),

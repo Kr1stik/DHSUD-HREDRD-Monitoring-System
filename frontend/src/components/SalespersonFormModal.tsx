@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { nirLocations } from '../utils/constants';
 
 interface SalespersonFormModalProps {
@@ -33,7 +32,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     sn_certificate_of_reg: '',
     prn: '',
     broker_prn: '',
-    broker_name: '',
+    broker_last_name: '',
+    broker_first_name: '',
+    broker_middle_name: '',
+    broker_suffix: '',
     broker_date_of_reg: '',
     broker_place_of_reg: '',
     or_no_registration: '',
@@ -56,7 +58,40 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
 
   useEffect(() => {
     if (salesperson) {
-      setFormData(salesperson);
+      setFormData({
+        ...salesperson,
+        first_name: salesperson.first_name || '',
+        middle_name: salesperson.middle_name || '',
+        last_name: salesperson.last_name || '',
+        suffix: salesperson.suffix || '',
+        tin: salesperson.tin || '',
+        phone_no: salesperson.phone_no || '',
+        address_street: salesperson.address_street || '',
+        city_municipality: salesperson.city_municipality || '',
+        province: salesperson.province || 'Negros Occidental',
+        prc_accre_no: salesperson.prc_accre_no || '',
+        sp_prc_reg_validity: salesperson.sp_prc_reg_validity || '',
+        sn_certificate_of_reg: salesperson.sn_certificate_of_reg || '',
+        prn: salesperson.prn || '',
+        broker_prn: salesperson.broker_prn || '',
+        broker_last_name: salesperson.broker_last_name || '',
+        broker_first_name: salesperson.broker_first_name || '',
+        broker_middle_name: salesperson.broker_middle_name || '',
+        broker_suffix: salesperson.broker_suffix || '',
+        broker_date_of_reg: salesperson.broker_date_of_reg || '',
+        broker_place_of_reg: salesperson.broker_place_of_reg || '',
+        or_no_registration: salesperson.or_no_registration || '',
+        amount_reg: salesperson.amount_reg || '',
+        or_date: salesperson.or_date || '',
+        surety_bond_validity: salesperson.surety_bond_validity || '',
+        or_no_cash_bond: salesperson.or_no_cash_bond || '',
+        amount_cb: salesperson.amount_cb || '',
+        date_filed: salesperson.date_filed || '',
+        date_of_registration: salesperson.date_of_registration || '',
+        date_released: salesperson.date_released || '',
+        released_year: salesperson.released_year || '',
+        note: salesperson.note || '',
+      });
     } else {
       // Reset form for create mode
       setFormData({
@@ -75,7 +110,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
         sn_certificate_of_reg: '',
         prn: '',
         broker_prn: '',
-        broker_name: '',
+        broker_last_name: '',
+        broker_first_name: '',
+        broker_middle_name: '',
+        broker_suffix: '',
         broker_date_of_reg: '',
         broker_place_of_reg: '',
         or_no_registration: '',
@@ -109,6 +147,16 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     }
   };
 
+  const handleYearChange = (year: number) => {
+    if (mode === 'view') return;
+    const currentYears = [...(formData.valid_years || [])];
+    if (currentYears.includes(year)) {
+      setFormData({ ...formData, valid_years: currentYears.filter(y => y !== year) });
+    } else {
+      setFormData({ ...formData, valid_years: [...currentYears, year].sort() });
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (mode === 'view') return;
     if (e.target.files && e.target.files[0]) {
@@ -137,11 +185,19 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     }
 
     try {
-      if (mode === 'edit' && salesperson?.id) {
-        await axios.patch(`/api/salespersons/${salesperson.id}/`, data);
-      } else {
-        await axios.post('/api/salespersons/', data);
+      const url = mode === 'edit' && salesperson?.id 
+        ? `/api/salespersons/${salesperson.id}/` 
+        : '/api/salespersons/';
+      
+      const response = await fetch(url, {
+        method: mode === 'edit' ? 'PATCH' : 'POST',
+        body: data
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
       }
+
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
@@ -155,6 +211,17 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
   const provinces = Object.keys(nirLocations);
   const cities = nirLocations[formData.province as keyof typeof nirLocations] || [];
   const isView = mode === 'view';
+
+  // Computed Full Name and Address
+  const fullName = `${formData.first_name} ${formData.middle_name ? formData.middle_name + ' ' : ''}${formData.last_name}${formData.suffix ? ' ' + formData.suffix : ''}`.trim();
+  const fullAddress = `${formData.address_street ? formData.address_street + ', ' : ''}${formData.city_municipality ? formData.city_municipality + ', ' : ''}${formData.province}`.trim();
+
+  // Generate Years
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = 2015; y <= currentYear + 2; y++) {
+    years.push(y);
+  }
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
@@ -178,15 +245,13 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Personal Information</h3>
               
-              {isView && salesperson?.photo && (
+              {isView && (
                 <div className="flex justify-center mb-6">
-                  <div className="relative w-32 h-32 rounded-xl border-4 border-slate-100 overflow-hidden shadow-lg">
-                    <img 
-                      src={salesperson.photo.startsWith('http') ? salesperson.photo : `http://localhost:8000${salesperson.photo}`} 
-                      alt="Salesperson" 
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
+                  {salesperson.photo ? (
+                    <img src={salesperson.photo} alt="Salesperson" className="w-32 h-32 object-cover rounded-xl shadow-sm border border-slate-200" />
+                  ) : (
+                    <div className="w-32 h-32 bg-slate-100 rounded-xl shadow-sm border border-slate-200 flex items-center justify-center text-slate-400 text-sm font-medium">No Photo</div>
+                  )}
                 </div>
               )}
 
@@ -258,17 +323,29 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             {/* Section: Broker Affiliation */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Broker Affiliation</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Broker Name</label>
-                  <input disabled={isView} type="text" name="broker_name" value={formData.broker_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <input disabled={isView} type="text" name="broker_last_name" value={formData.broker_last_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <input disabled={isView} type="text" name="broker_first_name" value={formData.broker_first_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">MI</label>
+                  <input disabled={isView} type="text" name="broker_middle_name" value={formData.broker_middle_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Suffix</label>
+                  <input disabled={isView} type="text" name="broker_suffix" value={formData.broker_suffix} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Broker PRN</label>
                   <input disabled={isView} type="text" name="broker_prn" value={formData.broker_prn} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
                 </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date of Registration</label>
                   <input disabled={isView} type="date" name="broker_date_of_reg" value={formData.broker_date_of_reg} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -277,6 +354,25 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                   <label className="block text-sm font-medium text-gray-700">Place of Registration</label>
                   <input disabled={isView} type="text" name="broker_place_of_reg" value={formData.broker_place_of_reg} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
                 </div>
+              </div>
+            </div>
+
+            {/* Section: Valid Years */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Valid Years</h3>
+              <div className="flex flex-wrap gap-3">
+                {years.map(year => (
+                  <label key={year} className={`flex items-center space-x-2 p-2 rounded-md border ${formData.valid_years?.includes(year) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'} cursor-pointer hover:bg-blue-50 transition-colors`}>
+                    <input 
+                      disabled={isView}
+                      type="checkbox" 
+                      checked={formData.valid_years?.includes(year)} 
+                      onChange={() => handleYearChange(year)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm font-medium text-gray-700">{year}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -347,6 +443,24 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                   <input disabled={isView} type="checkbox" name="is_renewal" checked={formData.is_renewal} onChange={handleChange} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50" />
                   <label className="ml-2 block text-sm text-gray-900">Renewal Application</label>
                 </div>
+            </div>
+
+            {/* Computed Info Display */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Preview Details</span>
+                <span className="text-[10px] text-blue-300">Read-only computed information</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-blue-700 uppercase">Full Name</label>
+                  <div className="text-sm font-semibold text-blue-900">{fullName || '---'}</div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-blue-700 uppercase">Full Address</label>
+                  <div className="text-sm font-semibold text-blue-900">{fullAddress || '---'}</div>
+                </div>
+              </div>
             </div>
 
             <div>

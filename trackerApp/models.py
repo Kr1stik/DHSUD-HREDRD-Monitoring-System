@@ -100,7 +100,10 @@ class Salesperson(models.Model):
 
     # Broker Details
     broker_prn = models.CharField(max_length=100, blank=True, null=True)
-    broker_name = models.CharField(max_length=255, blank=True, null=True)
+    broker_first_name = models.CharField(max_length=100, blank=True, null=True)
+    broker_middle_name = models.CharField(max_length=100, blank=True, null=True)
+    broker_last_name = models.CharField(max_length=100, blank=True, null=True)
+    broker_suffix = models.CharField(max_length=10, blank=True, null=True)
     broker_date_of_reg = models.DateField(blank=True, null=True)
     broker_place_of_reg = models.CharField(max_length=255, blank=True, null=True)
 

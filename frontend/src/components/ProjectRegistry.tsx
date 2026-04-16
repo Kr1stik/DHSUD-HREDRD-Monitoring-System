@@ -58,8 +58,8 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
   setCurrentPage
 }) => {
   return (
-    <div className="space-y-6 animate-in fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in print:bg-white print:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <h1 className="text-2xl font-bold text-slate-800">{currentView === 'active' ? 'Project Registry' : 'Archives'}</h1>
         <div className="flex items-center gap-2">
             {isBulkMode && (
@@ -71,14 +71,18 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
               </button>
             )}
             <button onClick={() => setIsBulkMode(!isBulkMode)} className={`p-2.5 rounded-xl border transition-all ${isBulkMode ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 text-slate-600'}`}><BulkIcon /></button>
-            <button onClick={() => setShowReport(true)} className="p-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all"><PrinterIcon /></button>
+            <button onClick={() => setShowReport(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
+              <PrinterIcon />
+              Print Report
+            </button>
             {currentView === 'active' && (
               <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base">+ New Project</button>
             )}
+            
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 print:hidden">
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center"><SearchIcon /></span>
           <input type="text" placeholder="Search projects..." className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -87,7 +91,7 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
 
       {/* BULK ACTION BAR - Minimal Design */}
       {selectedItems.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-slate-200 p-3 mb-4 rounded-xl shadow-sm w-full animate-in fade-in">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-slate-200 p-3 mb-4 rounded-xl shadow-sm w-full animate-in fade-in print:hidden">
           <div className="flex items-center gap-3 mb-3 sm:mb-0">
             <span className="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-lg text-sm">{selectedItems.length}</span>
             <span className="text-slate-600 font-bold text-sm">Items Selected</span>
@@ -112,7 +116,7 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
         </div>
       )}
 
-      <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden w-full max-w-full">
+      <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden w-full max-w-full print:block print:w-full print:m-0 print:p-0">
         {isLoading ? (
           <div className="px-6 py-20 text-center animate-pulse font-bold text-slate-400">Loading records...</div>
         ) : paginatedApps.length === 0 ? (
@@ -205,7 +209,7 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
       </div>
       
       {totalPages > 1 && (
-        <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200">
+        <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 print:hidden">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Page {currentPage} of {totalPages}</span>
           <div className="flex gap-2">
             <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-2 border rounded-xl disabled:opacity-30 font-bold text-sm">Prev</button>

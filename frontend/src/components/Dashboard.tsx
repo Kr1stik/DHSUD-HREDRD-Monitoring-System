@@ -8,6 +8,11 @@ interface DashboardProps {
     endorsed: number;
     denied: number;
   };
+  backendStats?: {
+    total_projects: number;
+    total_salespersons: number;
+    new_salespersons_this_month: number;
+  };
   chartData: any[];
   pieChartDataRaw: any[];
   pieChartData: any[];
@@ -15,10 +20,24 @@ interface DashboardProps {
   setShowChartModal: (modal: { show: boolean, title: string, data: any[] }) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ stats, chartData, pieChartDataRaw, pieChartData, COLORS, setShowChartModal }) => {
+const Dashboard: React.FC<DashboardProps> = ({ stats, backendStats, chartData, pieChartDataRaw, pieChartData, COLORS, setShowChartModal }) => {
   return (
     <div className="space-y-6 animate-in fade-in">
-      <h1 className="text-2xl font-bold text-slate-800">Analytics Overview</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-2xl font-bold text-slate-800">Analytics Overview</h1>
+        {backendStats && (
+          <div className="flex gap-4">
+            <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Total Salespersons</p>
+              <p className="text-xl font-black text-blue-600">{backendStats.total_salespersons}</p>
+            </div>
+            <div className="bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100">
+              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">New This Month</p>
+              <p className="text-xl font-black text-emerald-600">+{backendStats.new_salespersons_this_month}</p>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {[
           { label: 'Ongoing', val: stats.ongoing, color: 'blue' },

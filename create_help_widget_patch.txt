@@ -1,0 +1,15 @@
+You are a Senior React Developer building a floating interactive help widget.
+
+FILES TO AUDIT/CREATE:
+- Create a NEW file: frontend/src/components/FloatingHelp.tsx
+
+REQUIRED ACTIONS:
+1. Build a functional component named `FloatingHelp`.
+2. State: Use `useState` to track whether the widget is open or closed (`isOpen`).
+3. State: Use `useState` to track the currently active help tab/accordion (e.g., 'dashboard', 'projects', 'backup').
+4. UI - Closed State: A fixed, floating circular button in the bottom-right corner (e.g., `fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 bg-blue-600 text-white shadow-lg flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors`). It should contain a simple "?" icon.
+5. UI - Open State: A floating panel above the button (e.g., `absolute bottom-16 right-0 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden`).
+6. Content: Inside the panel, create an interactive accordion or tab list containing the instructions for: Dashboard, Projects, Cloud Backup, Archives, and Import/Export. When a user clicks a topic, it expands to show the text, hiding the others.
+7. Include a "Close" (X) button at the top of the open panel.
+
+OUTPUT: Provide the complete, fully styled code for `FloatingHelp.tsx`.

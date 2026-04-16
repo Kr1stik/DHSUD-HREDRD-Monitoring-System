@@ -68,7 +68,7 @@ class DHSUDLauncher:
 
     def open_system(self):
         # Admin opens localhost to get cloud backup permissions
-        webbrowser.open("http://localhost:8000/static/trackerApp/")
+        webbrowser.open("http://localhost:8000/HREDRD/dashboard")
 
     def stop_server(self):
         try:

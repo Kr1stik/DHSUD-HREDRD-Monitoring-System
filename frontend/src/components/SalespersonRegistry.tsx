@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { SearchIcon, EditIcon, TrashIcon, PrinterIcon, ArchiveIcon } from './Icons';
+import { SearchIcon, EditIcon, TrashIcon, PrinterIcon, ArchiveIcon, RestoreIcon } from './Icons';
 
 interface Salesperson {
   id: number;
@@ -17,23 +17,30 @@ interface Salesperson {
 }
 
 interface SalespersonRegistryProps {
-  onAdd: () => void;
-  onEdit: (salesperson: Salesperson) => void;
-  onView: (salesperson: Salesperson) => void;
+  onAdd?: () => void;
+  onEdit?: (salesperson: Salesperson) => void;
+  onView?: (salesperson: Salesperson) => void;
   showNotification: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   requestConfirm: (title: string, message: string, action: () => void, confirmText: string, confirmColor: string) => void;
+  searchTerm: string;
+  isArchiveMode?: boolean;
 }
 
-const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit, onView, showNotification, requestConfirm }) => {
+const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ 
+  onAdd, onEdit, onView, showNotification, requestConfirm, 
+  searchTerm: externalSearchTerm, isArchiveMode = false 
+}) => {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : localSearchTerm;
+
   const fetchSalespersons = () => {
     setIsLoading(true);
-    axios.get('/api/salespersons/')
+    axios.get(`/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}`)
       .then(res => {
         const data = res.data.results || res.data;
         setSalespersons(Array.isArray(data) ? data : []);
@@ -44,21 +51,9 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
 
   useEffect(() => {
     fetchSalespersons();
-  }, []);
+  }, [searchTerm, isArchiveMode]);
 
-  const activeSalespersons = useMemo(() => {
-    return salespersons.filter(sp => !sp.date_archived);
-  }, [salespersons]);
-
-  const filteredData = useMemo(() => {
-    return activeSalespersons.filter(sp => 
-      sp.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sp.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sp.prn?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [activeSalespersons, searchTerm]);
-
-  const sortedData = useMemo(() => [...filteredData].sort((a, b) => b.id - a.id), [filteredData]);
+  const sortedData = useMemo(() => [...salespersons].sort((a, b) => b.id - a.id), [salespersons]);
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const paginatedData = useMemo(() => sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [sortedData, currentPage]);
 
@@ -76,6 +71,23 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
       },
       "Archive",
       "bg-orange-500"
+    );
+  };
+
+  const handleRestore = (id: number) => {
+    requestConfirm(
+      "Restore Salesperson",
+      "Move this record back to active list?",
+      () => {
+        axios.patch(`/api/salespersons/${id}/`, { date_archived: null })
+          .then(() => {
+            showNotification("Salesperson restored.", "success");
+            fetchSalespersons();
+          })
+          .catch(() => showNotification("Failed to restore record.", "error"));
+      },
+      "Restore",
+      "bg-emerald-600"
     );
   };
 
@@ -109,18 +121,20 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
         }
       `}</style>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Salesperson Registry</h1>
-          <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-1">Real Estate Salesperson Registrations</p>
+      {!isArchiveMode && (
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+          <div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Salesperson Registry</h1>
+            <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-1">Real Estate Salesperson Registrations</p>
+          </div>
+          <button 
+            onClick={onAdd}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+          >
+            <span className="text-xl">+</span> Add Salesperson
+          </button>
         </div>
-        <button 
-          onClick={onAdd}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
-        >
-          <span className="text-xl">+</span> Add Salesperson
-        </button>
-      </div>
+      )}
 
       <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 overflow-hidden main-container">
         <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50 no-print">
@@ -132,15 +146,18 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
               type="text" 
               placeholder="Search by name or PRN..." 
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => externalSearchTerm === undefined ? setLocalSearchTerm(e.target.value) : null}
+              readOnly={externalSearchTerm !== undefined}
               className="block w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-100 rounded-2xl leading-5 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-slate-700"
             />
           </div>
-          <div className="flex gap-2 w-full md:w-auto">
-             <button onClick={() => window.print()} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-600 hover:bg-slate-50 transition-all">
-                <PrinterIcon /> Print Report
-             </button>
-          </div>
+          {!isArchiveMode && (
+            <div className="flex gap-2 w-full md:w-auto">
+               <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
+                  <PrinterIcon /> Print Report
+               </button>
+            </div>
+          )}
         </div>
 
         <div className="overflow-x-auto">
@@ -178,8 +195,8 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
                   <tr key={sp.id} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-4">
                       <div 
-                        onClick={() => onView(sp)}
-                        className="font-black text-slate-800 group-hover:text-blue-600 transition-colors cursor-pointer hover:underline"
+                        onClick={() => onView && onView(sp)}
+                        className={`font-black text-slate-800 transition-colors ${onView ? 'group-hover:text-blue-600 cursor-pointer hover:underline' : ''}`}
                       >
                         {sp.last_name}, {sp.first_name} {sp.middle_name} {sp.suffix}
                       </div>
@@ -198,15 +215,25 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ onAdd, onEdit
                     </td>
                     <td className="px-6 py-4 no-print" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => onEdit(sp)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit">
-                          <EditIcon />
-                        </button>
-                        <button onClick={() => handleArchive(sp.id)} className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all" title="Archive">
-                          <ArchiveIcon />
-                        </button>
-                        <button onClick={() => handleHardDelete(sp.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete Forever">
-                          <TrashIcon />
-                        </button>
+                        {!isArchiveMode ? (
+                          <>
+                            <button onClick={() => onEdit && onEdit(sp)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit">
+                              <EditIcon />
+                            </button>
+                            <button onClick={() => handleArchive(sp.id)} className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all" title="Archive">
+                              <ArchiveIcon />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => handleRestore(sp.id)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Restore">
+                               <RestoreIcon />
+                            </button>
+                            <button onClick={() => handleHardDelete(sp.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete Forever">
+                              <TrashIcon />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
