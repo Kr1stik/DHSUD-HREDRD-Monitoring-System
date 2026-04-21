@@ -5,9 +5,30 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils import timezone
 from rest_framework import viewsets, filters
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.contrib.auth import authenticate, login, logout
 from .models import ProjectApplication, Salesperson
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def login_view(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return Response({"success": True, "username": user.username})
+    return Response({"error": "Invalid credentials"}, status=401)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def logout_view(request):
+    logout(request)
+    return Response({"success": True})
 from .serializers import ProjectApplicationSerializer, SalespersonSerializer
 from .drive_service import upload_to_drive, get_connected_account, get_drive_service
 from django.http import JsonResponse
@@ -32,6 +53,8 @@ def bulk_action_projects(request):
     return Response({'status': 'error', 'message': 'Invalid action'}, status=400)
 
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def connect_google_account(request):
     try:
         # Calling get_drive_service() will trigger InstalledAppFlow if token.pickle is missing
@@ -53,8 +76,25 @@ def google_connection_status(request):
         return Response({'status': 'error', 'message': str(e)}, status=500)
 
 class ProjectApplicationViewSet(viewsets.ModelViewSet):
-    queryset = ProjectApplication.objects.all()
+    queryset = ProjectApplication.objects.all().order_by('-id')
     serializer_class = ProjectApplicationSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name_of_proj', 'mun_city', 'prov', 'proj_owner_dev', 'cr_no', 'ls_no']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # 🔓 ALLOW DETAIL FETCH: If we are fetching a specific ID, don't filter out archived
+        if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
+            return queryset
+
+        status = self.request.query_params.get('status_of_application')
+        if status:
+            queryset = queryset.filter(status_of_application=status)
+        else:
+            # If no status specified, exclude archived to show active projects by default
+            queryset = queryset.exclude(status_of_application='Archived')
+        return queryset
 
     def handle_drive_upload(self, instance, request):
         upload_file = request.FILES.get('drive_file')
@@ -163,8 +203,15 @@ def dashboard_stats(request):
     today = timezone.now()
     
     # Count active projects (not archived)
-    total_projects = ProjectApplication.objects.exclude(status_of_application='Archived').count()
+    active_projects = ProjectApplication.objects.exclude(status_of_application='Archived')
+    total_projects = active_projects.count()
     
+    # Breakdown by status
+    ongoing_count = active_projects.filter(status_of_application='Ongoing').count()
+    approved_count = active_projects.filter(status_of_application='Approved').count()
+    endorsed_count = active_projects.filter(status_of_application='Endorsed to HREDRB').count()
+    denied_count = active_projects.filter(status_of_application='Denied').count()
+
     # Count active salespersons (not archived)
     total_salespersons = Salesperson.objects.filter(date_archived__isnull=True).count()
     
@@ -177,6 +224,10 @@ def dashboard_stats(request):
     
     return Response({
         'total_projects': total_projects,
+        'ongoing': ongoing_count,
+        'approved': approved_count,
+        'endorsed': endorsed_count,
+        'denied': denied_count,
         'total_salespersons': total_salespersons,
         'new_salespersons_this_month': new_salespersons_this_month
     })

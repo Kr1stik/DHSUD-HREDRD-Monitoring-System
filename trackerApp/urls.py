@@ -8,7 +8,9 @@ from .views import (
     google_connection_status, 
     connect_google_account, 
     bulk_action_projects,
-    dashboard_stats
+    dashboard_stats,
+    login_view,
+    logout_view
 )
 
 router = DefaultRouter()
@@ -16,6 +18,8 @@ router.register(r'applications', ProjectApplicationViewSet)
 router.register(r'salespersons', SalespersonViewSet)
 
 urlpatterns = [
+    path('auth/login/', login_view, name='api_login'),
+    path('auth/logout/', logout_view, name='api_logout'),
     path('dashboard-stats/', dashboard_stats, name='dashboard-stats'),
     path('', include(router.urls)),
     path('projects/bulk-action/', bulk_action_projects, name='bulk_action'),

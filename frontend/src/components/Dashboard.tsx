@@ -45,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, backendStats, chartData, p
           { label: 'Endorsed', val: stats.endorsed, color: 'amber' },
           { label: 'Denied', val: stats.denied, color: 'red' }
         ].map(s => (
-          <div key={s.label} className={`bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-${s.color}-500`}>
+          <div key={s.label} className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.label}</p>
             <p className="text-2xl sm:text-4xl font-bold text-slate-800 mt-1">{s.val}</p>
           </div>
@@ -53,7 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, backendStats, chartData, p
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 h-fit">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-800">Status Breakdown</h3>
             <button onClick={() => setShowChartModal({show: true, title: 'Application Status Breakdown', data: chartData})} className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-widest">Full Report</button>
@@ -73,7 +73,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, backendStats, chartData, p
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 h-fit">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-800">Project Types</h3>
             <button onClick={() => setShowChartModal({show: true, title: 'All Project Types', data: pieChartDataRaw})} className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-widest">Full Report</button>

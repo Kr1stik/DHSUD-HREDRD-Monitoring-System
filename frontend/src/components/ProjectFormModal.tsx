@@ -305,7 +305,7 @@ const ProjectFormModal = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="col-span-1 md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Project Name *</label>
-                      <input required className="w-full border border-slate-300 rounded-md px-3 py-2 text-base font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-gray-800" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
+                      <input required className="w-full border border-slate-300 rounded-md px-3 py-2 text-base font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-gray-800 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" value={formData.name_of_proj} onChange={e => setFormData({...formData, name_of_proj: e.target.value})} />
                     </div>
                     <div className="col-span-1 md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Owner / Developer</label>

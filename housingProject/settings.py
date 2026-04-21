@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'trackerApp'
+    'trackerApp',
+    'housingProject'
 ]
 
 MIDDLEWARE = [
@@ -112,7 +113,10 @@ STORAGES = {
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True').lower() == 'true'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'housingProject.authentication.CsrfExemptSessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
 }

@@ -1,0 +1,14 @@
+You are a Senior UI Developer fixing mobile responsiveness for a Form Modal.
+
+FILES TO AUDIT:
+- frontend/src/components/SalespersonFormModal.tsx
+
+REQUIRED ACTIONS:
+1. MODAL WRAPPER: Locate the main floating modal container (the one with `bg-slate-800`). Ensure it does not overflow the screen width: `w-[95%] sm:w-[90%] max-w-5xl`. Ensure it can scroll vertically if the screen is short: `max-h-[90vh] overflow-y-auto`.
+2. RESPONSIVE GRIDS: Locate all `<div className="grid ...">` elements used for the form fields.
+3. Change any static grids (like `grid-cols-2` or `grid-cols-3`) to mobile-first responsive grids:
+   Example: change `grid-cols-3` to `grid-cols-1 sm:grid-cols-2 md:grid-cols-3`.
+   Example: change `grid-cols-2` to `grid-cols-1 md:grid-cols-2`.
+4. BUTTONS: Ensure the "Cancel" and "Save" buttons at the bottom have `w-full sm:w-auto` and stack nicely `flex-col-reverse sm:flex-row`.
+
+OUTPUT: Provide the updated grid layouts and modal wrapper JSX.

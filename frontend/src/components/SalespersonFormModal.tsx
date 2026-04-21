@@ -46,7 +46,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     amount_cb: '',
     date_filed: '',
     date_of_registration: '',
+    reg_month_year: '',
     date_released: '',
+    released_month: '',
+    released_date: '',
     released_year: '',
     is_renewal: false,
     valid_years: [],
@@ -88,7 +91,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
         amount_cb: salesperson.amount_cb || '',
         date_filed: salesperson.date_filed || '',
         date_of_registration: salesperson.date_of_registration || '',
+        reg_month_year: salesperson.reg_month_year || '',
         date_released: salesperson.date_released || '',
+        released_month: salesperson.released_month || '',
+        released_date: salesperson.released_date || '',
         released_year: salesperson.released_year || '',
         note: salesperson.note || '',
       });
@@ -225,7 +231,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
+      <div className="bg-white rounded-xl shadow-2xl w-[95%] sm:w-[90%] max-w-5xl max-h-[90vh] flex flex-col overflow-y-auto relative">
         {/* Header - Fixed */}
         <div className="flex-none p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
@@ -239,8 +245,8 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Body */}
+          <div className="flex-1 p-6 space-y-8">
             {/* Section: Personal Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Personal Information</h3>
@@ -255,10 +261,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <input disabled={isView} required type="text" name="first_name" value={formData.first_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input disabled={isView} required type="text" name="first_name" value={formData.first_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Middle Name</label>
@@ -266,7 +272,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input disabled={isView} required type="text" name="last_name" value={formData.last_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input disabled={isView} required type="text" name="last_name" value={formData.last_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Suffix</label>
@@ -274,7 +280,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Sex</label>
                   <select disabled={isView} name="sex" value={formData.sex} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500">
@@ -288,20 +294,20 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone No.</label>
-                  <input disabled={isView} type="text" name="phone_no" value={formData.phone_no} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input disabled={isView} required type="text" name="phone_no" value={formData.phone_no} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Province</label>
-                  <select disabled={isView} name="province" value={formData.province} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500">
+                  <select disabled={isView} required name="province" value={formData.province} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20">
                     {provinces.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">City/Municipality</label>
-                  <select disabled={isView} name="city_municipality" value={formData.city_municipality} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500">
+                  <select disabled={isView} required name="city_municipality" value={formData.city_municipality} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20">
                     <option value="">Select City/Municipality</option>
                     {cities.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -323,7 +329,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             {/* Section: Broker Affiliation */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Broker Affiliation</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Last Name</label>
                   <input disabled={isView} type="text" name="broker_last_name" value={formData.broker_last_name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -341,7 +347,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                   <input disabled={isView} type="text" name="broker_suffix" value={formData.broker_suffix} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Broker PRN</label>
                   <input disabled={isView} type="text" name="broker_prn" value={formData.broker_prn} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -379,7 +385,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             {/* Section: Registration & Payments */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Registration & Payments</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">PRC Accre No.</label>
                   <input disabled={isView} type="text" name="prc_accre_no" value={formData.prc_accre_no} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -398,7 +404,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">OR No. (Reg)</label>
                   <input disabled={isView} type="text" name="or_no_registration" value={formData.or_no_registration} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -413,7 +419,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Surety Bond Validity</label>
                   <input disabled={isView} type="date" name="surety_bond_validity" value={formData.surety_bond_validity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -430,7 +436,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             </div>
 
             {/* System Dates & Status */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
                <div>
                   <label className="block text-sm font-medium text-gray-700">Date Filed</label>
                   <input disabled={isView} type="date" name="date_filed" value={formData.date_filed} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
@@ -443,6 +449,35 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                   <input disabled={isView} type="checkbox" name="is_renewal" checked={formData.is_renewal} onChange={handleChange} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50" />
                   <label className="ml-2 block text-sm text-gray-900">Renewal Application</label>
                 </div>
+            </div>
+
+            {/* Release Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Release Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Reg. Month/Year</label>
+                  <input disabled={isView} type="text" name="reg_month_year" value={formData.reg_month_year} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date Released</label>
+                  <input disabled={isView} type="date" name="date_released" value={formData.date_released} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Released Month</label>
+                  <input disabled={isView} type="text" name="released_month" value={formData.released_month} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Released Date (Day)</label>
+                  <input disabled={isView} type="text" name="released_date" value={formData.released_date} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Released Year</label>
+                  <input disabled={isView} type="text" name="released_year" value={formData.released_year} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                </div>
+              </div>
             </div>
 
             {/* Computed Info Display */}
@@ -470,12 +505,12 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
           </div>
 
           {/* Pinned Footer */}
-          <div className="flex-none p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <div className="flex-none p-4 border-t border-slate-200 bg-slate-50 flex flex-col-reverse sm:flex-row justify-end gap-3">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               {isView ? 'Close' : 'Cancel'}
             </button>
             {!isView && (
-              <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center">
+              <button type="submit" disabled={loading} className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
                 {loading ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">

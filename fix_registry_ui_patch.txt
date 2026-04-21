@@ -1,0 +1,12 @@
+You are a Senior UI Developer fixing mobile table scrolling and reverting accidental dark theme classes.
+
+FILES TO AUDIT:
+- frontend/src/components/SalespersonRegistry.tsx
+
+REQUIRED ACTIONS:
+1. REVERT WRAPPER COLORS: Locate the `overflow-x-auto` div wrapping the `<table>`. Remove `bg-slate-800`, `border-slate-700`, and `shadow-xl`. 
+   It should just be: `<div className="w-full overflow-x-auto pb-4">`
+2. FORCE TABLE SCROLL: Locate the `<table ...>` tag itself. Add `min-w-[800px]` (or `min-w-max`) to its className so it refuses to squish on mobile and actually triggers the horizontal scrollbar.
+3. FIX HEADER ALIGNMENT: Ensure the container holding the Search Input and "Print Report" button uses `flex-col sm:flex-row gap-4` so they stack neatly on phones instead of cramming next to each other.
+
+OUTPUT: Provide the updated JSX for the header controls and the table wrapper block.

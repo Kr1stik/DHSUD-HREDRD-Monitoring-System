@@ -1,9 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { HelpIcon, CloseIcon } from './Icons';
 
 const FloatingHelp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>('dashboard');
+  const helpRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const helpContent = [
     {
@@ -34,7 +51,7 @@ const FloatingHelp: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100]">
+    <div ref={helpRef} className="fixed bottom-6 right-6 z-[100]">
       {isOpen ? (
         <div className="absolute bottom-20 right-0 w-80 bg-white rounded-[24px] shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
           {/* Header */}

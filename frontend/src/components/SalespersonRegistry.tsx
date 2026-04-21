@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { SearchIcon, EditIcon, TrashIcon, PrinterIcon, ArchiveIcon, RestoreIcon } from './Icons';
 
@@ -23,27 +24,49 @@ interface SalespersonRegistryProps {
   showNotification: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   requestConfirm: (title: string, message: string, action: () => void, confirmText: string, confirmColor: string) => void;
   searchTerm: string;
+  setSearchTerm?: (val: string) => void;
   isArchiveMode?: boolean;
 }
 
 const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({ 
   onAdd, onEdit, onView, showNotification, requestConfirm, 
-  searchTerm: externalSearchTerm, isArchiveMode = false 
+  searchTerm: externalSearchTerm, setSearchTerm: externalSetSearchTerm, isArchiveMode = false 
 }) => {
+  const location = useLocation();
+
+  useEffect(() => {
+    handleSearchChange('');
+  }, [location.pathname, isArchiveMode]);
+
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 50;
 
   const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : localSearchTerm;
 
+  const handleSearchChange = (val: string) => {
+    if (externalSetSearchTerm) {
+      externalSetSearchTerm(val);
+    } else {
+      setLocalSearchTerm(val);
+    }
+    setCurrentPage(1);
+  };
+
   const fetchSalespersons = () => {
     setIsLoading(true);
-    axios.get(`/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}`)
+    axios.get(`/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`)
       .then(res => {
-        const data = res.data.results || res.data;
-        setSalespersons(Array.isArray(data) ? data : []);
+        if (res.data.results) {
+          setSalespersons(res.data.results);
+          setTotalCount(res.data.count);
+        } else {
+          setSalespersons(Array.isArray(res.data) ? res.data : []);
+          setTotalCount(Array.isArray(res.data) ? res.data.length : 0);
+        }
       })
       .catch(() => showNotification('Failed to load salespersons.', 'error'))
       .finally(() => setIsLoading(false));
@@ -51,11 +74,11 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
 
   useEffect(() => {
     fetchSalespersons();
-  }, [searchTerm, isArchiveMode]);
+  }, [searchTerm, isArchiveMode, currentPage]);
 
-  const sortedData = useMemo(() => [...salespersons].sort((a, b) => b.id - a.id), [salespersons]);
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const paginatedData = useMemo(() => sortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [sortedData, currentPage]);
+  const sortedData = useMemo(() => [...salespersons], [salespersons]);
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const paginatedData = sortedData;
 
   const handleArchive = (id: number) => {
     requestConfirm(
@@ -122,23 +145,23 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       `}</style>
 
       {!isArchiveMode && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
           <div>
             <h1 className="text-3xl font-black text-slate-800 tracking-tight">Salesperson Registry</h1>
             <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-1">Real Estate Salesperson Registrations</p>
           </div>
           <button 
             onClick={onAdd}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <span className="text-xl">+</span> Add Salesperson
           </button>
         </div>
       )}
 
-      <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 overflow-hidden main-container">
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50 no-print">
-          <div className="relative w-full md:w-96">
+      <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-4 md:p-8 main-container print:bg-white print:shadow-none print:border-0 print:p-0 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50 no-print">
+          <div className="relative w-full sm:w-96 bg-white/50 border border-slate-200 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <SearchIcon />
             </div>
@@ -146,72 +169,70 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
               type="text" 
               placeholder="Search by name or PRN..." 
               value={searchTerm}
-              onChange={(e) => externalSearchTerm === undefined ? setLocalSearchTerm(e.target.value) : null}
-              readOnly={externalSearchTerm !== undefined}
-              className="block w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-100 rounded-2xl leading-5 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold text-slate-700"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="block w-full pl-12 pr-4 py-3 bg-transparent leading-5 placeholder-slate-400 focus:outline-none transition-all font-bold text-slate-700"
             />
           </div>
           {!isArchiveMode && (
-            <div className="flex gap-2 w-full md:w-auto">
-               <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
+            <div className="flex gap-2 w-full sm:w-auto">
+               <button onClick={() => window.print()} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
                   <PrinterIcon /> Print Report
                </button>
             </div>
           )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="w-full overflow-x-auto pb-4">
+          <table className="w-full min-w-[800px] text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Salesperson Name</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">PRN / PRC No</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Contact</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Location</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center no-print">Actions</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Salesperson Name</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">PRN / PRC No</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Contact</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Location</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 text-center no-print">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
-                      <p className="text-slate-400 font-bold animate-pulse">Loading registry...</p>
+                  <td colSpan={5} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+                      <p className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading records...</p>
                     </div>
                   </td>
                 </tr>
               ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="max-w-xs mx-auto space-y-3">
-                       <p className="text-slate-300 font-black text-4xl">:(</p>
-                       <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">No salespersons found</p>
+                       <p className="text-slate-800 font-black uppercase tracking-widest text-sm">No salespersons found</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 paginatedData.map((sp) => (
-                  <tr key={sp.id} className="hover:bg-slate-50/80 transition-colors group">
+                  <tr key={sp.id} className="hover:bg-slate-50/80 transition-colors cursor-default border-b border-slate-100 last:border-0 group">
                     <td className="px-6 py-4">
                       <div 
                         onClick={() => onView && onView(sp)}
-                        className={`font-black text-slate-800 transition-colors ${onView ? 'group-hover:text-blue-600 cursor-pointer hover:underline' : ''}`}
+                        className={`font-semibold text-slate-900 transition-colors ${onView ? 'group-hover:text-blue-600 cursor-pointer hover:underline' : ''}`}
                       >
                         {sp.last_name}, {sp.first_name} {sp.middle_name} {sp.suffix}
                       </div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-tighter">ID: {sp.id.toString().padStart(5, '0')}</div>
+                      <div className="text-[10px] font-bold text-slate-600 uppercase mt-0.5 tracking-tighter">ID: {sp.id.toString().padStart(5, '0')}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-mono font-bold text-slate-600 text-sm">{sp.prn || '---'}</div>
-                      <div className="text-[10px] font-black text-blue-500 uppercase mt-0.5 tracking-widest">{sp.prc_accre_no || 'No PRC No'}</div>
+                      <div className="text-[10px] font-bold text-blue-600 uppercase mt-0.5 tracking-widest">{sp.prc_accre_no || 'No PRC No'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-bold text-slate-600 text-sm">{sp.phone_no || '---'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-bold text-slate-700 text-sm">{sp.city_municipality}</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase">{sp.province}</div>
+                      <div className="font-bold text-slate-600 text-sm">{sp.city_municipality}</div>
+                      <div className="text-[10px] font-bold text-slate-600 uppercase">{sp.province}</div>
                     </td>
                     <td className="px-6 py-4 no-print" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-2">

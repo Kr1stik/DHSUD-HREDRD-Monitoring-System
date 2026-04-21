@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   EditIcon, ArchiveIcon, RestoreIcon, TrashIcon, 
   SearchIcon, CloudIcon, BulkIcon, PrinterIcon 
@@ -57,9 +58,15 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
   totalPages,
   setCurrentPage
 }) => {
+  const location = useLocation();
+
+  useEffect(() => {
+    setSearchTerm('');
+  }, [location.pathname, currentView]);
+
   return (
     <div className="space-y-6 animate-in fade-in print:bg-white print:p-0">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+      <div className="flex flex-col-reverse md:flex-row md:items-center justify-between gap-4 print:hidden">
         <h1 className="text-2xl font-bold text-slate-800">{currentView === 'active' ? 'Project Registry' : 'Archives'}</h1>
         <div className="flex items-center gap-2">
             {isBulkMode && (
@@ -83,9 +90,9 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
       </div>
 
       <div className="flex gap-3 print:hidden">
-        <div className="relative flex-1">
+        <div className="relative flex-1 bg-white/50 border border-slate-200 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
           <span className="absolute inset-y-0 left-4 flex items-center"><SearchIcon /></span>
-          <input type="text" placeholder="Search projects..." className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input type="text" placeholder="Search projects..." className="w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
 
@@ -116,9 +123,14 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
         </div>
       )}
 
-      <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden w-full max-w-full print:block print:w-full print:m-0 print:p-0">
+      <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-4 md:p-8 overflow-hidden w-full max-w-full print:bg-white print:shadow-none print:border-0 print:p-0">
         {isLoading ? (
-          <div className="px-6 py-20 text-center animate-pulse font-bold text-slate-400">Loading records...</div>
+          <div className="px-6 py-20 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+              <p className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading records...</p>
+            </div>
+          </div>
         ) : paginatedApps.length === 0 ? (
           <EmptyState 
             title={searchTerm ? "No Matches Found" : "Registry is Empty"} 
@@ -128,83 +140,84 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
             )}
           />
         ) : (
-          <table className="w-full md:min-w-[900px] text-left border-separate border-spacing-0">
-            <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200">
-                {isBulkMode && <th className="px-6 py-4 w-12 border-b border-slate-200"><input type="checkbox" checked={paginatedApps.length > 0 && paginatedApps.every(a => selectedItems.includes(a.id))} onChange={handleSelectAll} /></th>}
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Project Info</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Location</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Status</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200">Certifications</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right border-b border-slate-200">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
-              {paginatedApps.map(app => {
-                const isSelected = selectedItems.includes(app.id);
-                return (
-                  <tr 
-                    key={app.id} 
-                    onClick={() => toggleSelection(app.id)}
-                    className={`flex flex-col relative py-5 px-4 gap-1 md:table-row md:py-0 md:px-0 md:gap-0 transition-all cursor-pointer group border-2 ${
-                      isSelected 
-                        ? 'bg-blue-50/80 border-blue-400 ring-4 ring-blue-500/10 md:ring-0 md:border-transparent md:bg-blue-50/50' 
-                        : 'border-transparent hover:bg-slate-50'
-                    }`}
-                  >
-                    {isBulkMode && (
-                      <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5" onClick={(e) => e.stopPropagation()}>
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelection(app.id)} />
+          <div className="overflow-x-auto w-full rounded-xl">
+            <table className="w-full md:min-w-[900px] text-left border-separate border-spacing-0">
+              <thead className="hidden md:table-header-group">
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  {isBulkMode && <th className="px-6 py-4 w-12 border-b border-slate-200"><input type="checkbox" checked={paginatedApps.length > 0 && paginatedApps.every(a => selectedItems.includes(a.id))} onChange={handleSelectAll} /></th>}
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200">Project Info</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200">Location</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200">Certifications</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider text-right border-b border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
+                {paginatedApps.map(app => {
+                  const isSelected = selectedItems.includes(app.id);
+                  return (
+                    <tr 
+                      key={app.id} 
+                      onClick={() => toggleSelection(app.id)}
+                      className={`flex flex-col relative py-5 px-4 gap-1 md:table-row md:py-0 md:px-0 md:gap-0 hover:bg-slate-50/80 transition-colors cursor-default border-b border-slate-100 last:border-0 group border-2 ${
+                        isSelected 
+                          ? 'bg-blue-50/80 border-blue-400 ring-4 ring-blue-500/10 md:ring-0 md:border-transparent md:bg-blue-50/50' 
+                          : 'border-transparent'
+                      }`}
+                    >
+                      {isBulkMode && (
+                        <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5" onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" checked={isSelected} onChange={() => toggleSelection(app.id)} />
+                        </td>
+                      )}
+                      <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                        <div className="flex items-center gap-2">
+                          {isSelected && <div className="md:hidden w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse"></div>}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setViewingApp(app); }} 
+                            className="font-semibold text-blue-600 text-lg hover:underline text-left block truncate max-w-[calc(100%-100px)] md:max-w-xs"
+                          >
+                            {app.name_of_proj}
+                          </button>
+                          {app.drive_link && <CloudIcon color={app.status_of_application === 'Approved' ? 'text-emerald-500' : 'text-blue-500'} />}
+                        </div>
+                        <span className="text-xs font-bold text-slate-600 mt-1 block uppercase tracking-tight">{app.proj_type}</span>
                       </td>
-                    )}
-                    <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
-                      <div className="flex items-center gap-2">
-                        {/* MOBILE SELECTION DOT */}
-                        {isSelected && <div className="md:hidden w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse"></div>}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setViewingApp(app); }} 
-                          className="font-bold text-blue-600 text-lg hover:underline text-left block truncate max-w-[calc(100%-100px)] md:max-w-xs"
-                        >
-                          {app.name_of_proj}
-                        </button>
-                        {app.drive_link && <CloudIcon color={app.status_of_application === 'Approved' ? 'text-emerald-500' : 'text-blue-500'} />}
-                      </div>
-                      <span className="text-xs font-medium text-slate-400 mt-1 block uppercase tracking-tight">{app.proj_type}</span>
-                    </td>
-                    <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
-                      <p className="font-medium text-slate-700">{app.mun_city}</p>
-                      <p className="text-xs font-medium text-slate-400">{app.prov}</p>
-                    </td>
-                    <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
-                      {getStatusBadge(app.status_of_application)}
-                    </td>
-                    <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
-                      <div className="flex flex-col gap-1">
-                          {app.cr_no && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">CR: {app.cr_no}</span>}
-                          {app.ls_no && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">LS: {app.ls_no}</span>}
-                          {(!app.cr_no && !app.ls_no) && <span className="text-xs text-slate-300 italic font-medium">None</span>}
-                      </div>
-                    </td>
-                    <td className="absolute top-4 right-2 flex gap-1 bg-transparent md:relative md:top-auto md:right-auto md:table-cell md:px-6 md:py-5" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-1">
-                        {currentView === 'active' ? (
-                          <>
-                            <button onClick={() => {setEditingApp(app); setIsModalOpen(true);}} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><EditIcon /></button>
-                            <button onClick={() => handleSoftDelete(app.id)} className="p-2 text-slate-400 hover:text-orange-600 transition-colors"><ArchiveIcon /></button>
-                          </>
-                        ) : (
-                          <>
-                            <button onClick={() => handleRestore(app.id)} className="p-2 text-slate-400 hover:text-emerald-600 transition-colors"><RestoreIcon /></button>
-                            <button onClick={() => handleHardDelete(app.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><TrashIcon /></button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                        <p className="font-semibold text-slate-700">{app.mun_city}</p>
+                        <p className="text-xs font-bold text-slate-600">{app.prov}</p>
+                      </td>
+                      <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                        {getStatusBadge(app.status_of_application)}
+                      </td>
+                      <td className="block md:table-cell px-2 py-1 md:px-6 md:py-5">
+                        <div className="flex flex-col gap-1">
+                            {app.cr_no && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">CR: {app.cr_no}</span>}
+                            {app.ls_no && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">LS: {app.ls_no}</span>}
+                            {(!app.cr_no && !app.ls_no) && <span className="text-xs text-slate-400 italic font-medium">None</span>}
+                        </div>
+                      </td>
+                      <td className="absolute top-4 right-2 flex gap-1 bg-transparent md:relative md:top-auto md:right-auto md:table-cell md:px-6 md:py-5" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-1">
+                          {currentView === 'active' ? (
+                            <>
+                              <button onClick={() => {setEditingApp(app); setIsModalOpen(true);}} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><EditIcon /></button>
+                              <button onClick={() => handleSoftDelete(app.id)} className="p-2 text-slate-400 hover:text-orange-600 transition-colors"><ArchiveIcon /></button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => handleRestore(app.id)} className="p-2 text-slate-400 hover:text-emerald-600 transition-colors"><RestoreIcon /></button>
+                              <button onClick={() => handleHardDelete(app.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><TrashIcon /></button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
       

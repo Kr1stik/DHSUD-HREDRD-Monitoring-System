@@ -118,8 +118,11 @@ class Salesperson(models.Model):
     # System Dates
     date_filed = models.DateField(blank=True, null=True)
     date_of_registration = models.DateField(blank=True, null=True)
+    reg_month_year = models.CharField(max_length=20, blank=True, null=True)
     date_released = models.DateField(blank=True, null=True)
-    released_year = models.IntegerField(blank=True, null=True)
+    released_month = models.CharField(max_length=50, blank=True, null=True)
+    released_date = models.CharField(max_length=20, blank=True, null=True)
+    released_year = models.CharField(max_length=10, blank=True, null=True)
 
     # Application Type
     is_renewal = models.BooleanField(default=False)

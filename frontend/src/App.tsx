@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import * as XLSX from 'xlsx';
+import { Toaster, toast } from 'react-hot-toast';
 
 import Sidebar from './components/Sidebar';
 import logo from './assets/DHSUD_LOGO.png';
@@ -12,6 +13,7 @@ import CloudBackup from './components/CloudBackup';
 import ProjectRegistry from './components/ProjectRegistry';
 import SalespersonRegistry from './components/SalespersonRegistry';
 import FloatingHelp from './components/FloatingHelp';
+import Login from './components/Login';
 import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
@@ -123,8 +125,10 @@ const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () 
 // ==========================================
 function AppContent() {
   const location = useLocation();
+  const [currentUser, setCurrentUser] = useState<string | null>(localStorage.getItem('dhsud_session'));
   const [searchTerm, setSearchTerm] = useState('')
   const [applications, setApplications] = useState<Application[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [archiveTab, setArchiveTab] = useState<'projects' | 'salespersons'>('projects');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -143,19 +147,21 @@ function AppContent() {
   });
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const [showHelp, setShowHelp] = useState(false);
+  const itemsPerPage = 50;
   const [showReport, setShowReport] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingApp, setEditingApp] = useState<Application | null>(null)
   const [viewingApp, setViewingApp] = useState<Application | null>(null)
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [isBulkMode, setIsBulkMode] = useState(false)
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
   const [dashboardStats, setDashboardStats] = useState({
     total_projects: 0,
     total_salespersons: 0,
-    new_salespersons_this_month: 0
+    new_salespersons_this_month: 0,
+    ongoing: 0,
+    approved: 0,
+    endorsed: 0,
+    denied: 0
   });
   
   const [syncFolder, setSyncFolder] = useState('');
@@ -184,8 +190,9 @@ function AppContent() {
   })
 
   const showNotification = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000);
+    if (type === 'success') toast.success(message);
+    else if (type === 'error') toast.error(message);
+    else toast(message);
   }
 
   const requestConfirm = (title: string, message: string, action: () => void, confirmText: string, confirmColor: string) => {
@@ -200,10 +207,18 @@ function AppContent() {
 
   const fetchApplications = (silent: boolean = false) => {
     if (!silent) setIsLoading(true);
-    axios.get(API_URL)
+    const isArchive = location.pathname.includes('/archives');
+    const archivedParam = isArchive ? 'Archived' : '';
+    axios.get(`${API_URL}?page=${currentPage}&search=${searchTerm}${archivedParam ? `&status_of_application=${archivedParam}` : ''}`)
       .then(response => {
-        const data = response.data.results || response.data;
-        setApplications(Array.isArray(data) ? data : []);
+        if (response.data.results) {
+          setApplications(response.data.results);
+          setTotalCount(response.data.count);
+        } else {
+          const data = Array.isArray(response.data) ? response.data : [];
+          setApplications(data);
+          setTotalCount(data.length);
+        }
       })
       .catch((err) => {
         setApplications([]);
@@ -242,27 +257,31 @@ function AppContent() {
   }
 
   useEffect(() => { 
-    fetchApplications();
-    fetchDashboardStats();
-    checkGoogleStatus();
-  }, [])
+    if (currentUser) {
+      fetchApplications();
+      fetchDashboardStats();
+      checkGoogleStatus();
+    }
+  }, [currentPage, currentUser])
 
   useEffect(() => {
-    setSelectedItems([]);
-    setIsBulkMode(false);
-    setCurrentPage(1); 
-    setIsSidebarOpen(false); 
-  }, [location.pathname, searchTerm]);
+    if (currentUser) {
+      setSelectedItems([]);
+      setIsBulkMode(false);
+      setCurrentPage(1); 
+      setIsSidebarOpen(false); 
+      if (currentPage === 1) fetchApplications();
+    }
+  }, [location.pathname, searchTerm, currentUser]);
 
   const activeApps = applications.filter(app => app.status_of_application !== 'Archived')
-  const archivedApps = applications.filter(app => app.status_of_application === 'Archived')
   
   const stats = useMemo(() => ({
-    ongoing: activeApps.filter(a => a.status_of_application === 'Ongoing').length,
-    approved: activeApps.filter(a => a.status_of_application === 'Approved').length,
-    denied: activeApps.filter(a => a.status_of_application === 'Denied').length,
-    endorsed: activeApps.filter(a => a.status_of_application === 'Endorsed to HREDRB').length,
-  }), [activeApps]);
+    ongoing: dashboardStats.ongoing,
+    approved: dashboardStats.approved,
+    denied: dashboardStats.denied,
+    endorsed: dashboardStats.endorsed,
+  }), [dashboardStats]);
 
   const chartData = useMemo(() => [
     { name: 'Ongoing', count: stats.ongoing, color: '#3b82f6' },
@@ -297,16 +316,13 @@ function AppContent() {
     return result;
   }, [pieChartDataRaw]);
 
-  const displayApps = location.pathname.includes('/archives') ? archivedApps : activeApps;
+  const displayApps = applications;
 
-  const filteredApps = useMemo(() => displayApps.filter(app => {
-    return app.name_of_proj.toLowerCase().includes(searchTerm.toLowerCase()) || 
-           app.mun_city.toLowerCase().includes(searchTerm.toLowerCase());
-  }), [displayApps, searchTerm]);
+  const filteredApps = displayApps;
 
-  const sortedApps = useMemo(() => [...filteredApps].sort((a, b) => b.id - a.id), [filteredApps]); 
-  const totalPages = Math.ceil(sortedApps.length / itemsPerPage);
-  const paginatedApps = useMemo(() => sortedApps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [sortedApps, currentPage]);
+  const sortedApps = displayApps; 
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const paginatedApps = displayApps;
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) setSelectedItems(paginatedApps.map(app => app.id));
@@ -405,8 +421,18 @@ function AppContent() {
     return 'Dashboard';
   };
 
+  if (!currentUser) {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <Login onLogin={setCurrentUser} />
+      </>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 relative overflow-x-hidden">
+      <Toaster position="top-right" />
       
       {/* MOBILE HEADER */}
       <header className="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
@@ -421,32 +447,11 @@ function AppContent() {
         </button>
       </header>
 
-      {/* TOAST NOTIFICATIONS */}
-      {toast.show && (
-        <div className={`fixed top-20 md:top-8 right-4 md:right-8 z-[150] min-w-[280px] sm:min-w-[320px] max-w-md text-white rounded-2xl shadow-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-8 fade-in ${
-          toast.type === 'success' ? 'bg-emerald-600' : 
-          toast.type === 'error' ? 'bg-red-600' : 
-          toast.type === 'warning' ? 'bg-amber-500' : 'bg-blue-600'
-        }`}>
-          <div className="shrink-0 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            {toast.type === 'success' ? (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-            )}
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-black uppercase tracking-widest opacity-80">{toast.type}</p>
-            <p className="text-sm font-bold leading-tight">{toast.message}</p>
-          </div>
-        </div>
-      )}
-
       {/* SIDEBAR NAVIGATION */}
       <Sidebar 
         isSidebarOpen={isSidebarOpen} 
         setIsSidebarOpen={setIsSidebarOpen} 
-        setShowHelp={setShowHelp} 
+        currentUser={currentUser}
       />
 
       {/* MAIN CONTENT AREA */}
@@ -508,8 +513,8 @@ function AppContent() {
                 showNotification={showNotification}
                 requestConfirm={requestConfirm}
                 searchTerm={searchTerm}
-              />
-            } />
+                setSearchTerm={setSearchTerm}
+              />            } />
             <Route path="/archives" element={
               <div className="space-y-6">
                 <div className="flex gap-2 mb-6 bg-slate-100 p-1 rounded-lg w-fit">
@@ -556,6 +561,7 @@ function AppContent() {
                 ) : (
                   <SalespersonRegistry 
                     searchTerm={searchTerm} 
+                    setSearchTerm={setSearchTerm}
                     isArchiveMode={true} 
                     showNotification={showNotification}
                     requestConfirm={requestConfirm}
@@ -725,24 +731,6 @@ function AppContent() {
           requestConfirm={requestConfirm}
           handleExport={handleExport}
         />
-      )}
-
-      {/* HELP MODAL */}
-      {showHelp && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[130]">
-          <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
-            <h3 className="text-2xl font-black text-slate-800 mb-4">Quick Guide</h3>
-            <div className="space-y-4 text-slate-600 font-medium">
-              <p>• <strong className="text-slate-800">Dashboard:</strong> Real-time charts of all active projects.</p>
-              <p>• <strong className="text-slate-800">Projects:</strong> View and manage all your active registration applications.</p>
-              <p>• <strong className="text-slate-800">Cloud Backup:</strong> Save a secure copy of your database to Google Drive using the 'Save to Google Drive' button.</p>
-              <p>• <strong className="text-slate-800">Switching Accounts:</strong> If your Google Drive is full, go to the Cloud Backup tab and click 'Switch Account' to safely disconnect and log in with a new one.</p>
-              <p>• <strong className="text-slate-800">Import/Export:</strong> Use the Bulk Import tab in the "+ New Project" modal to upload CSV/Excel files.</p>
-              <p>• <strong className="text-slate-800">Archives:</strong> Store old projects. They can be restored or permanently deleted at any time.</p>
-            </div>
-            <button onClick={() => setShowHelp(false)} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black">Got it</button>
-          </div>
-        </div>
       )}
 
       {/* CHART FULL REPORT MODAL */}
