@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import logo from '../assets/DHSUD_LOGO.png';
 
 interface LoginProps {
@@ -12,6 +13,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +24,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         toast.success('Welcome, Admin!', { duration: 5000 });
         localStorage.setItem('dhsud_session', 'active');
         onLogin(response.data.username);
+        navigate('/dashboard', { replace: true });
       } else {
         toast.error('Invalid credentials');
       }

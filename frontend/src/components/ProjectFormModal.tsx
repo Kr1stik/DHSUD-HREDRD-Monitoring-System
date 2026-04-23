@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { CloseIcon } from './Icons';
-import { initialOptions, initialNirLocations, type Application } from '../utils/constants';
+import { initialOptions, type Application } from '../utils/constants';
 
 // 🌐 API CONFIGURATION
 const API_URL = '/api/applications/';
@@ -46,25 +46,39 @@ const ProjectFormModal = ({
     return emptyForm;
   });
 
-  const [locationDB, setLocationDB] = useState<Record<string, Record<string, string[]>>>(() => {
-    const saved = localStorage.getItem('dhsud_custom_locations');
-    return saved ? JSON.parse(saved) : initialNirLocations;
-  });
-
   const [formOptions, setFormOptions] = useState(() => {
     const saved = localStorage.getItem('dhsud_custom_options');
     return saved ? JSON.parse(saved) : initialOptions;
   });
 
+  // 🌍 API LOCATION STATES
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [barangays, setBarangays] = useState<any[]>([]);
+  const [actionModal, setActionModal] = useState<{isOpen: boolean, type: 'add'|'delete', title: string, targetId?: any, targetName?: string, actionFn: (val?: string) => Promise<void>}>({ isOpen: false, type: 'add', title: '', actionFn: async () => {} });
+  const [modalInput, setModalInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const [promptDialog, setPromptDialog] = useState({ show: false, title: '', message: '', placeholder: '', action: null as any });
   const [promptValue, setPromptValue] = useState('');
 
-  useEffect(() => { localStorage.setItem('dhsud_custom_locations', JSON.stringify(locationDB)); }, [locationDB]);
-  useEffect(() => { localStorage.setItem('dhsud_custom_options', JSON.stringify(formOptions)); }, [formOptions]);
+  const fetchLocations = async () => {
+    try {
+      const [provRes, cityRes, brgyRes] = await Promise.all([ 
+        axios.get('/api/provinces/'), 
+        axios.get('/api/cities/'), 
+        axios.get('/api/barangays/') 
+      ]);
+      setProvinces(provRes.data?.results || provRes.data);
+      setCities(cityRes.data?.results || cityRes.data);
+      setBarangays(brgyRes.data?.results || brgyRes.data);
+    } catch (err) { 
+      console.error("Error fetching locations:", err); 
+    }
+  };
 
-  const availableProvinces = Object.keys(locationDB);
-  const availableCities = formData.prov ? Object.keys(locationDB[formData.prov] || {}).sort() : [];
-  const availableBarangays = (formData.prov && formData.mun_city) ? (locationDB[formData.prov][formData.mun_city] || []).sort() : [];
+  useEffect(() => { fetchLocations(); }, []);
+  useEffect(() => { localStorage.setItem('dhsud_custom_options', JSON.stringify(formOptions)); }, [formOptions]);
 
   const handleAddOption = (category: string, title: string) => {
     setPromptValue('');
@@ -98,42 +112,51 @@ const ProjectFormModal = ({
   };
 
   const handleAddLocation = (type: 'Province' | 'City' | 'Barangay') => {
-    setPromptValue('');
-    let title = type;
-    let message = `Add a new ${type}.`;
-    
+    setModalInput("");
     if (type === 'City' && !formData.prov) { showNotification("Select a Province first", "error"); return; }
     if (type === 'Barangay' && !formData.mun_city) { showNotification("Select a City first", "error"); return; }
 
-    setPromptDialog({
-      show: true, title: `Add ${title}`, message, placeholder: `Enter ${type} name`,
-      action: (newVal: string) => {
-        if (!newVal || newVal.trim() === '') return;
-        const clean = newVal.trim();
-        setLocationDB(prev => {
-          const next = { ...prev };
-          if (type === 'Province') { if (!next[clean]) next[clean] = {}; }
-          else if (type === 'City') { if (!next[formData.prov][clean]) next[formData.prov][clean] = []; }
-          else if (type === 'Barangay') { if (!next[formData.prov][formData.mun_city].includes(clean)) next[formData.prov][formData.mun_city].push(clean); }
-          return next;
-        });
-        showNotification(`Added ${clean}`, "success");
+    setActionModal({
+      isOpen: true,
+      type: 'add',
+      title: `Add New ${type}`,
+      actionFn: async (val) => {
+        if (type === 'Province') await axios.post('/api/provinces/', { name: val });
+        else if (type === 'City') await axios.post('/api/cities/', { name: val, province: formData.prov });
+        else if (type === 'Barangay') await axios.post('/api/barangays/', { name: val, city: formData.mun_city });
+        await fetchLocations();
+        showNotification(`Added ${val}`, "success");
       }
     });
   };
 
-  const handleDeleteLocation = (type: 'Province' | 'City' | 'Barangay', value: string) => {
-    if (!value) return;
-    requestConfirm(`Delete ${type}`, `Permanently delete '${value}'?`, () => {
-      setLocationDB(prev => {
-        const next = { ...prev };
-        if (type === 'Province') { delete next[value]; setFormData(p => ({...p, prov: '', mun_city: '', street_brgy: ''})); }
-        else if (type === 'City') { delete next[formData.prov][value]; setFormData(p => ({...p, mun_city: '', street_brgy: ''})); }
-        else if (type === 'Barangay') { next[formData.prov][formData.mun_city] = next[formData.prov][formData.mun_city].filter(b => b !== value); setFormData(p => ({...p, street_brgy: ''})); }
-        return next;
-      });
-      showNotification(`Deleted ${value}`, "success");
-    }, "Delete", "bg-red-600");
+  const handleDeleteLocation = (type: 'Province' | 'City' | 'Barangay', valueId: string) => {
+    if (!valueId) return;
+    let targetName = "";
+    if (type === 'Province') targetName = provinces.find(p => String(p.id) === String(valueId))?.name || "";
+    else if (type === 'City') targetName = cities.find(c => String(c.id) === String(valueId))?.name || "";
+    else if (type === 'Barangay') targetName = barangays.find(b => String(b.id) === String(valueId))?.name || "";
+
+    setActionModal({
+      isOpen: true,
+      type: 'delete',
+      title: `Delete ${type}`,
+      targetName,
+      actionFn: async () => {
+        if (type === 'Province') {
+          await axios.delete(`/api/provinces/${valueId}/`);
+          setFormData(p => ({ ...p, prov: '', mun_city: '', street_brgy: '' }));
+        } else if (type === 'City') {
+          await axios.delete(`/api/cities/${valueId}/`);
+          setFormData(p => ({ ...p, mun_city: '', street_brgy: '' }));
+        } else if (type === 'Barangay') {
+          await axios.delete(`/api/barangays/${valueId}/`);
+          setFormData(p => ({ ...p, street_brgy: '' }));
+        }
+        await fetchLocations();
+        showNotification(`Deleted ${targetName}`, "success");
+      }
+    });
   };
 
   const handleArrayInput = (index: number, value: string, field: 'cr_nos' | 'ls_nos') => {
@@ -148,6 +171,10 @@ const ProjectFormModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    const provName = provinces.find(p => String(p.id) === String(formData.prov))?.name || formData.prov;
+    const cityName = cities.find(c => String(c.id) === String(formData.mun_city))?.name || formData.mun_city;
+    const brgyName = barangays.find(b => String(b.id) === String(formData.street_brgy))?.name || formData.street_brgy;
+
     const formDataObj = new FormData();
     formDataObj.append('name_of_proj', formData.name_of_proj);
     formDataObj.append('proj_owner_dev', formData.proj_owner_dev || '');
@@ -155,9 +182,9 @@ const ProjectFormModal = ({
     formDataObj.append('type_of_application', formData.type_of_application);
     formDataObj.append('status_of_application', formData.status_of_application);
     formDataObj.append('main_or_compliance', formData.main_or_compliance);
-    formDataObj.append('prov', formData.prov);
-    formDataObj.append('mun_city', formData.mun_city);
-    formDataObj.append('street_brgy', formData.street_brgy);
+    formDataObj.append('prov', provName);
+    formDataObj.append('mun_city', cityName);
+    formDataObj.append('street_brgy', brgyName);
     
     if (formData.date_filed) formDataObj.append('date_filed', formData.date_filed);
     if (formData.date_issued) formDataObj.append('date_issued', formData.date_issued);
@@ -200,14 +227,16 @@ const ProjectFormModal = ({
           return;
         }
 
-        const validLocations = locationDB;
         const validData = [];
 
         for (const row of jsonData) {
-          const prov = row['Prov']?.trim();
-          const city = row['Mun/City']?.trim();
+          const provName = row['Prov']?.trim();
+          const cityName = row['Mun/City']?.trim();
           
-          if (validLocations[prov] && validLocations[prov][city]) {
+          const province = provinces.find(p => p.name === provName);
+          const city = cities.find(c => c.name === cityName && String(c.province) === String(province?.id));
+
+          if (province && city) {
             validData.push(row);
           }
         }
@@ -274,7 +303,7 @@ const ProjectFormModal = ({
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-screen h-screen z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
+      <div className="fixed top-0 left-0 w-screen h-screen z-[9998] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
           
           <div className="sticky top-0 bg-white px-6 sm:px-8 py-4 border-b flex flex-col gap-4 z-10">
@@ -429,7 +458,7 @@ const ProjectFormModal = ({
                       </div>
                       <select required className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.prov} onChange={e => setFormData({...formData, prov: e.target.value, mun_city: '', street_brgy: ''})}>
                         <option value="" disabled>Select Province...</option>
-                        {availableProvinces.map(p => <option key={p} value={p}>{p}</option>)}
+                        {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
                     </div>
                     <div>
@@ -442,7 +471,7 @@ const ProjectFormModal = ({
                       </div>
                       <select required disabled={!formData.prov} className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800 disabled:opacity-50" value={formData.mun_city} onChange={e => setFormData({...formData, mun_city: e.target.value, street_brgy: ''})}>
                         <option value="" disabled>Select City...</option>
-                        {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                        {cities.filter(c => String(c.province) === String(formData.prov)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
                     <div>
@@ -455,7 +484,7 @@ const ProjectFormModal = ({
                       </div>
                       <select required disabled={!formData.mun_city} className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800 disabled:opacity-50" value={formData.street_brgy} onChange={e => setFormData({...formData, street_brgy: e.target.value})}>
                         <option value="" disabled>Select Barangay...</option>
-                        {availableBarangays.map(b => <option key={b} value={b}>{b}</option>)}
+                        {barangays.filter(b => String(b.city) === String(formData.mun_city)).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                       </select>
                     </div>
                   </div>
@@ -467,15 +496,30 @@ const ProjectFormModal = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date Filed</label>
-                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_filed || ''} onChange={e => setFormData({...formData, date_filed: e.target.value})} />
+                      <input
+                        type="date"
+                        value={formData.date_filed || ''}
+                        onChange={(e) => setFormData({...formData, date_filed: e.target.value})}
+                        className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800"
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
-                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_issued || ''} onChange={e => setFormData({...formData, date_issued: e.target.value})} />
+                      <input
+                        type="date"
+                        value={formData.date_issued || ''}
+                        onChange={(e) => setFormData({...formData, date_issued: e.target.value})}
+                        className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800"
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date Completion</label>
-                      <input type="date" className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium text-gray-800" value={formData.date_completion || ''} onChange={e => setFormData({...formData, date_completion: e.target.value})} />
+                      <input
+                        type="date"
+                        value={formData.date_completion || ''}
+                        onChange={(e) => setFormData({...formData, date_completion: e.target.value})}
+                        className="w-full border border-slate-300 rounded-md px-3 py-2 font-medium outline-none focus:border-blue-500 transition-all text-gray-800"
+                      />
                     </div>
                   </div>
                 </div>
@@ -555,8 +599,29 @@ const ProjectFormModal = ({
         </div>
       </div>
 
+      {actionModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-slate-100"><h3 className="text-xl font-bold text-slate-800">{actionModal.title}</h3></div>
+            <div className="p-6">
+              {actionModal.type === 'add' ? (
+                <input type="text" autoFocus value={modalInput} onChange={(e) => setModalInput(e.target.value)} placeholder="Enter name..." className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-slate-700" />
+              ) : (
+                <p className="text-slate-600">Are you sure you want to delete <span className="font-bold text-red-600">{actionModal.targetName}</span>? This action cannot be undone.</p>
+              )}
+            </div>
+            <div className="p-4 bg-slate-50 flex justify-end gap-3">
+              <button type="button" onClick={() => setActionModal({ ...actionModal, isOpen: false })} disabled={isProcessing} className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50">Cancel</button>
+              <button type="button" onClick={async () => { setIsProcessing(true); try { await actionModal.actionFn(modalInput); setActionModal({ ...actionModal, isOpen: false }); } catch (e) { alert("Action failed."); } finally { setIsProcessing(false); } }} disabled={isProcessing || (actionModal.type === 'add' && !modalInput.trim())} className={`px-5 py-2.5 rounded-xl font-semibold text-white transition-colors disabled:opacity-50 ${actionModal.type === 'add' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}`}>
+                {isProcessing ? 'Processing...' : (actionModal.type === 'add' ? 'Save Location' : 'Yes, Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {promptDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[1000]">
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[9999]">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95">
              <h3 className="text-xl font-bold text-gray-800 text-center mb-6">{promptDialog.title}</h3>
              <input autoFocus className="w-full mb-6 border border-slate-300 rounded-md px-4 py-3 bg-slate-50 font-medium outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value={promptValue} onChange={(e) => setPromptValue(e.target.value)} />

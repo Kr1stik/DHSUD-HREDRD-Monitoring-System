@@ -1,0 +1,13 @@
+You are a Senior React Developer fixing authentication persistence and post-login routing.
+
+FILES TO AUDIT:
+- Look for your authentication context or state (e.g., `frontend/src/context/AuthContext.tsx`, `AuthContext.jsx`, or `App.tsx`).
+- Look for your login form component (e.g., `frontend/src/components/Login.tsx` or `LoginPage.tsx`).
+
+REQUIRED ACTIONS:
+1. UPGRADE TO LOCAL STORAGE: In your Auth context/state, find where tokens are saved. Change all instances of `sessionStorage.setItem` to `localStorage.setItem`. Do the same for `getItem` and `removeItem` (for the logout function). This ensures the login survives when the browser closes.
+2. FORCE DASHBOARD ROUTING: In your Login component, find the `handleLogin` or `onSubmit` function. Upon a successful login, remove any logic that navigates to a `from` or `returnUrl` location. 
+3. Hardcode the navigation to explicitly push to the dashboard:
+   - Example: `Maps('/dashboard', { replace: true });` (or whatever the exact route string is for your dashboard overview).
+
+OUTPUT: Detail the exact changes made to the storage methods and the navigation logic.

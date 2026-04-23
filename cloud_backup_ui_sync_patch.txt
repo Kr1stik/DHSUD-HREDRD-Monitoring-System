@@ -1,0 +1,14 @@
+You are a Senior React Developer fixing conditional rendering and state persistence in a Cloud Backup UI.
+
+FILES TO AUDIT:
+- frontend/src/components/CloudBackup.tsx
+
+REQUIRED ACTIONS:
+1. ADD FETCH LOGIC: Import `useEffect` and `axios`. Add a `useEffect` hook that runs on mount (`[]`). It should make a GET request to `/api/drive-status/` (or the URL created in Phase 1).
+2. UPDATE STATE: Based on the response, set a state variable like `isConnected` (boolean). Add an `isLoading` state so the UI doesn't flash the wrong message while checking.
+3. FIX CONDITIONAL RENDERING: Clean up the JSX return block.
+   - If `isConnected` is TRUE: Show the active "Connected Account" block and the "Save to Google Drive" button. (Do NOT show the green "Google Drive Linked" success banner permanently, that should only appear briefly after a manual connection).
+   - If `isConnected` is FALSE: Hide the destination folder input and the "Save" button. Only show the "Connect to Google Drive" login button.
+4. ENSURE CLEANUP: Make sure there are no overlapping states (e.g., "No account connected" text showing at the same time as a "Linked" success banner).
+
+OUTPUT: Provide the completely updated `CloudBackup.tsx` file.

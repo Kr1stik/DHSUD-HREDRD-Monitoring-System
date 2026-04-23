@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { SearchIcon, EditIcon, TrashIcon, PrinterIcon, ArchiveIcon, RestoreIcon } from './Icons';
@@ -42,8 +42,9 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const itemsPerPage = 50;
 
   const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : localSearchTerm;
 
@@ -56,17 +57,14 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
     setCurrentPage(1);
   };
 
-  const fetchSalespersons = () => {
+  const fetchSalespersons = (url = `/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`) => {
     setIsLoading(true);
-    axios.get(`/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`)
+    axios.get(url)
       .then(res => {
-        if (res.data.results) {
-          setSalespersons(res.data.results);
-          setTotalCount(res.data.count);
-        } else {
-          setSalespersons(Array.isArray(res.data) ? res.data : []);
-          setTotalCount(Array.isArray(res.data) ? res.data.length : 0);
-        }
+        setSalespersons(res.data.results || res.data);
+        setNextUrl(res.data.next);
+        setPrevUrl(res.data.previous);
+        setTotalCount(res.data.count || (Array.isArray(res.data) ? res.data.length : 0));
       })
       .catch(() => showNotification('Failed to load salespersons.', 'error'))
       .finally(() => setIsLoading(false));
@@ -75,10 +73,6 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
   useEffect(() => {
     fetchSalespersons();
   }, [searchTerm, isArchiveMode, currentPage]);
-
-  const sortedData = useMemo(() => [...salespersons], [salespersons]);
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const paginatedData = sortedData;
 
   const handleArchive = (id: number) => {
     requestConfirm(
@@ -203,7 +197,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
                     </div>
                   </td>
                 </tr>
-              ) : paginatedData.length === 0 ? (
+              ) : salespersons.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="max-w-xs mx-auto space-y-3">
@@ -212,7 +206,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
                   </td>
                 </tr>
               ) : (
-                paginatedData.map((sp) => (
+                salespersons.map((sp) => (
                   <tr key={sp.id} className="hover:bg-slate-50/80 transition-colors cursor-default border-b border-slate-100 last:border-0 group">
                     <td className="px-6 py-4">
                       <div 
@@ -264,25 +258,12 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
           </table>
         </div>
 
-        {/* PAGINATION */}
-        {!isLoading && totalPages > 1 && (
-          <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center no-print">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Page {currentPage} of {totalPages}</p>
+        {totalCount >= 50 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t border-slate-700">
+            <span className="text-sm text-slate-400">Showing up to 50 records per page</span>
             <div className="flex gap-2">
-              <button 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => prev - 1)}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-600 disabled:opacity-50 hover:bg-slate-50 transition-all"
-              >
-                Previous
-              </button>
-              <button 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-600 disabled:opacity-50 hover:bg-slate-50 transition-all"
-              >
-                Next
-              </button>
+              <button onClick={() => prevUrl && fetchSalespersons(prevUrl)} disabled={!prevUrl} className="px-4 py-2 text-sm font-medium text-white bg-slate-700 rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Previous</button>
+              <button onClick={() => nextUrl && fetchSalespersons(nextUrl)} disabled={!nextUrl} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Next</button>
             </div>
           </div>
         )}

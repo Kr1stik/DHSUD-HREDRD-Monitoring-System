@@ -1,5 +1,21 @@
 from django.db import models
 
+class Province(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name
+
+class CityMunicipality(models.Model):
+    province = models.ForeignKey(Province, related_name='cities', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    class Meta: unique_together = ('province', 'name')
+    def __str__(self): return f"{self.name}, {self.province.name}"
+
+class Barangay(models.Model):
+    city = models.ForeignKey(CityMunicipality, related_name='barangays', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    class Meta: unique_together = ('city', 'name')
+    def __str__(self): return f"{self.name}, {self.city.name}"
+
 class Developer(models.Model):
     """Table to store the Project Owners / Developers so they aren't typed manually every time."""
     name = models.CharField(max_length=255, unique=True)
@@ -139,3 +155,23 @@ class Salesperson(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+class ProjectType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name
+
+class ApplicationType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name
+
+class ApplicationStatus(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name
+
+class MainComplianceOption(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name
+
+class CrlsOption(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    def __str__(self): return self.name

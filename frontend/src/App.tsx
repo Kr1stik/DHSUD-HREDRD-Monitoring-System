@@ -39,16 +39,16 @@ const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () 
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[200] overflow-y-auto p-8 print:absolute print:inset-0 print:bg-white print:z-[9999] print:block">
+    <div className="fixed inset-0 bg-white z-[200] overflow-y-auto p-8 print:absolute print:inset-0 print:w-full print:max-w-none print:m-0 print:p-0 print:bg-white print:z-[9999] print:block">
       <style>{`
         @media print { 
-          @page { margin: 10mm; } 
+          @page { size: landscape; margin: 1cm; } 
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
           table { width: 100% !important; font-size: 10pt; table-layout: fixed; } 
           th, td { word-wrap: break-word; white-space: normal !important; padding: 4px !important; }
         }
       `}</style>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto print:max-w-none print:m-0 print:p-0">
         <div className="flex justify-between items-start mb-8 print:hidden">
           <button onClick={onClose} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all">Close Preview</button>
           <button onClick={() => window.print()} className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2">
@@ -620,7 +620,7 @@ function AppContent() {
 
       {/* VIEW DETAILS MODAL */}
       {viewingApp && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
           <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
             <div className="p-8">
               <div className="flex justify-between items-start mb-6">
@@ -709,7 +709,7 @@ function AppContent() {
 
       {/* CONFIRMATION DIALOG */}
       {confirmDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[130]">
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-4 z-[9999]">
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95">
             <h3 className="text-2xl font-black text-slate-800 text-center mb-3">{confirmDialog.title}</h3>
             <p className="text-slate-500 text-center mb-8 font-medium">{confirmDialog.message}</p>
@@ -735,7 +735,7 @@ function AppContent() {
 
       {/* CHART FULL REPORT MODAL */}
       {showChartModal.show && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[150]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
           <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
               <h3 className="text-xl font-black text-slate-800">{showChartModal.title}</h3>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { nirLocations } from '../utils/constants';
+import axios from 'axios';
 
 interface SalespersonFormModalProps {
   isOpen: boolean;
@@ -59,6 +59,129 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
   const [photo, setPhoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Cascading Address States
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [barangays, setBarangays] = useState<any[]>([]);
+
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedBrgy, setSelectedBrgy] = useState("");
+  const [specificAddress, setSpecificAddress] = useState("");
+
+  // Custom Modal States
+  const [actionModal, setActionModal] = useState<{isOpen: boolean, type: 'add'|'delete', title: string, targetId?: any, targetName?: string, actionFn: (val?: string) => Promise<void>}>({ isOpen: false, type: 'add', title: '', actionFn: async () => {} });
+  const [modalInput, setModalInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const fetchLocations = async () => {
+    try {
+      const [provRes, cityRes, brgyRes] = await Promise.all([ 
+        axios.get('/api/provinces/'), 
+        axios.get('/api/cities/'), 
+        axios.get('/api/barangays/') 
+      ]);
+      setProvinces(provRes.data?.results || provRes.data);
+      setCities(cityRes.data?.results || cityRes.data);
+      setBarangays(brgyRes.data?.results || brgyRes.data);
+    } catch (err) { 
+      console.error("Error fetching locations:", err); 
+    }
+  };
+
+  useEffect(() => { 
+    if (isOpen) fetchLocations(); 
+  }, [isOpen]);
+
+  const handleAddProvince = () => { 
+    setModalInput(""); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'add', 
+      title: 'Add New Province', 
+      actionFn: async (val) => { 
+        await axios.post('/api/provinces/', {name: val}); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+  
+  const handleDeleteProvince = () => { 
+    if(!selectedProvince) return; 
+    const prov = provinces.find(p => String(p.id) === String(selectedProvince)); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'delete', 
+      title: 'Delete Province', 
+      targetName: prov?.name, 
+      actionFn: async () => { 
+        await axios.delete(`/api/provinces/${selectedProvince}/`); 
+        setSelectedProvince(""); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+  
+  const handleAddCity = () => { 
+    if(!selectedProvince) return;
+    setModalInput(""); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'add', 
+      title: 'Add New City', 
+      actionFn: async (val) => { 
+        await axios.post('/api/cities/', {name: val, province: selectedProvince}); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+  
+  const handleDeleteCity = () => { 
+    if(!selectedCity) return; 
+    const city = cities.find(c => String(c.id) === String(selectedCity)); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'delete', 
+      title: 'Delete City', 
+      targetName: city?.name, 
+      actionFn: async () => { 
+        await axios.delete(`/api/cities/${selectedCity}/`); 
+        setSelectedCity(""); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+  
+  const handleAddBrgy = () => { 
+    if(!selectedCity) return;
+    setModalInput(""); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'add', 
+      title: 'Add New Barangay', 
+      actionFn: async (val) => { 
+        await axios.post('/api/barangays/', {name: val, city: selectedCity}); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+  
+  const handleDeleteBrgy = () => { 
+    if(!selectedBrgy) return; 
+    const brgy = barangays.find(b => String(b.id) === String(selectedBrgy)); 
+    setActionModal({ 
+      isOpen: true, 
+      type: 'delete', 
+      title: 'Delete Barangay', 
+      targetName: brgy?.name, 
+      actionFn: async () => { 
+        await axios.delete(`/api/barangays/${selectedBrgy}/`); 
+        setSelectedBrgy(""); 
+        await fetchLocations(); 
+      } 
+    }); 
+  };
+
   useEffect(() => {
     if (salesperson) {
       setFormData({
@@ -98,6 +221,12 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
         released_year: salesperson.released_year || '',
         note: salesperson.note || '',
       });
+      // Note: We might need to match names to IDs if salesperson data comes with names
+      // For now, setting them directly as strings might cause select issues if IDs are expected
+      setSelectedProvince(salesperson.province_id || salesperson.province || '');
+      setSelectedCity(salesperson.city_id || salesperson.city_municipality || '');
+      setSelectedBrgy(salesperson.barangay_id || salesperson.barangay || '');
+      setSpecificAddress(salesperson.address_street || '');
     } else {
       // Reset form for create mode
       setFormData({
@@ -137,6 +266,10 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
         note: '',
       });
       setPhoto(null);
+      setSelectedProvince('');
+      setSelectedCity('');
+      setSelectedBrgy('');
+      setSpecificAddress('');
     }
   }, [salesperson, isOpen]);
 
@@ -144,7 +277,23 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     if (mode === 'view') return;
-    const { name, value, type } = e.target;
+    const { name, type } = e.target;
+    let { value } = e.target;
+
+    // Auto-capitalize names (First Name, Middle Name, Last Name, Broker Names)
+    const nameFields = ['first_name', 'middle_name', 'last_name', 'broker_first_name', 'broker_middle_name', 'broker_last_name'];
+    if (nameFields.includes(name) && value.length > 0) {
+      value = value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    // MI logic: if it's middle_name or broker_middle_name and length is 1, append a dot
+    // However, it's better to do this on blur or specialized logic to allow backspace.
+    // User asked "in MI should have '.' static". 
+    // Let's implement it such that if they type 'A', it becomes 'A.'
+    if ((name === 'middle_name' || name === 'broker_middle_name') && value.length === 1 && /^[a-zA-Z]$/.test(value)) {
+      value = value + ".";
+    }
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData({ ...formData, [name]: checked });
@@ -175,14 +324,22 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     if (mode === 'view') return;
     setLoading(true);
 
+    const submissionData = {
+      ...formData,
+      province: provinces.find(p => String(p.id) === String(selectedProvince))?.name || selectedProvince,
+      city_municipality: cities.find(c => String(c.id) === String(selectedCity))?.name || selectedCity,
+      barangay: barangays.find(b => String(b.id) === String(selectedBrgy))?.name || selectedBrgy,
+      address_street: specificAddress
+    };
+
     const data = new FormData();
-    Object.keys(formData).forEach(key => {
+    Object.keys(submissionData).forEach(key => {
       if (key === 'valid_years') {
-        data.append(key, JSON.stringify(formData[key]));
+        data.append(key, JSON.stringify(submissionData[key]));
       } else if (key === 'photo') {
         // Skip current photo string if it exists
       } else {
-        data.append(key, formData[key] === null ? '' : formData[key]);
+        data.append(key, submissionData[key] === null ? '' : submissionData[key]);
       }
     });
 
@@ -214,13 +371,15 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
     }
   };
 
-  const provinces = Object.keys(nirLocations);
-  const cities = nirLocations[formData.province as keyof typeof nirLocations] || [];
   const isView = mode === 'view';
 
   // Computed Full Name and Address
   const fullName = `${formData.first_name} ${formData.middle_name ? formData.middle_name + ' ' : ''}${formData.last_name}${formData.suffix ? ' ' + formData.suffix : ''}`.trim();
-  const fullAddress = `${formData.address_street ? formData.address_street + ', ' : ''}${formData.city_municipality ? formData.city_municipality + ', ' : ''}${formData.province}`.trim();
+  
+  const provName = provinces.find(p => String(p.id) === String(selectedProvince))?.name || "";
+  const cityName = cities.find(c => String(c.id) === String(selectedCity))?.name || "";
+  const brgyName = barangays.find(b => String(b.id) === String(selectedBrgy))?.name || "";
+  const fullAddress = [specificAddress, brgyName, cityName, provName].filter(Boolean).join(', ');
 
   // Generate Years
   const currentYear = new Date().getFullYear();
@@ -230,8 +389,8 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
   }
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen z-[999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
-      <div className="bg-white rounded-xl shadow-2xl w-[95%] sm:w-[90%] max-w-5xl max-h-[90vh] flex flex-col overflow-y-auto relative">
+    <div className="fixed top-0 left-0 w-screen h-screen z-[9998] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
+      <div className="bg-white rounded-xl shadow-2xl w-[95%] sm:w-[90%] max-w-5xl max-h-[90vh] flex flex-col relative overflow-hidden">
         {/* Header - Fixed */}
         <div className="flex-none p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
@@ -244,9 +403,9 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
           {/* Body */}
-          <div className="flex-1 p-6 space-y-8">
+          <div className="flex-1 p-6 space-y-8 overflow-y-auto min-h-0">
             {/* Section: Personal Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-blue-700 border-b pb-2">Personal Information</h3>
@@ -293,29 +452,57 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                   <input disabled={isView} type="text" name="tin" value={formData.tin} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone No.</label>
-                  <input disabled={isView} required type="text" name="phone_no" value={formData.phone_no} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" />
+                  <label className="block text-sm font-medium text-gray-700">Phone No. <span className="text-[10px] text-gray-400 font-normal">(Min 9 digits)</span></label>
+                  <input disabled={isView} required type="text" name="phone_no" value={formData.phone_no} onChange={handleChange} minLength={9} pattern="[0-9]*" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Province</label>
-                  <select disabled={isView} required name="province" value={formData.province} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20">
-                    {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+              <div className="col-span-1 sm:col-span-2 md:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50/50">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">Province</label>
+                    <div className="flex gap-1">
+                      <button type="button" onClick={handleAddProvince} className="text-[10px] text-blue-600 hover:text-blue-800 font-bold px-1">+ Add</button>
+                      <button type="button" onClick={handleDeleteProvince} className="text-[10px] text-red-600 hover:text-red-800 font-bold px-1">× Del</button>
+                    </div>
+                  </div>
+                  <select disabled={isView} value={selectedProvince} onChange={(e) => { setSelectedProvince(e.target.value); setSelectedCity(""); setSelectedBrgy(""); setSpecificAddress(""); }} className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                    <option value="">Select Province...</option>
+                    {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">City/Municipality</label>
-                  <select disabled={isView} required name="city_municipality" value={formData.city_municipality} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500 focus:invalid:border-red-500 focus:invalid:ring-red-500/20">
-                    <option value="">Select City/Municipality</option>
-                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">City / Municipality</label>
+                    <div className="flex gap-1">
+                      <button type="button" onClick={handleAddCity} className="text-[10px] text-blue-600 hover:text-blue-800 font-bold px-1">+ Add</button>
+                      <button type="button" onClick={handleDeleteCity} className="text-[10px] text-red-600 hover:text-red-800 font-bold px-1">× Del</button>
+                    </div>
+                  </div>
+                  <select disabled={isView || !selectedProvince} value={selectedCity} onChange={(e) => { setSelectedCity(e.target.value); setSelectedBrgy(""); setSpecificAddress(""); }} className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-gray-100">
+                    <option value="">Select City...</option>
+                    {cities.filter(c => String(c.province) === String(selectedProvince)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Street / Specific Address</label>
-                  <input disabled={isView} type="text" name="address_street" value={formData.address_street} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-semibold text-gray-500 uppercase">Barangay</label>
+                    <div className="flex gap-1">
+                      <button type="button" onClick={handleAddBrgy} className="text-[10px] text-blue-600 hover:text-blue-800 font-bold px-1">+ Add</button>
+                      <button type="button" onClick={handleDeleteBrgy} className="text-[10px] text-red-600 hover:text-red-800 font-bold px-1">× Del</button>
+                    </div>
+                  </div>
+                  <select disabled={isView || !selectedCity} value={selectedBrgy} onChange={(e) => setSelectedBrgy(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-gray-100">
+                    <option value="">Select Brgy...</option>
+                    {barangays.filter(b => String(b.city) === String(selectedCity)).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
                 </div>
+                {selectedBrgy && (
+                  <div className="col-span-1 sm:col-span-3 flex flex-col gap-1.5 mt-2 animate-in slide-in-from-top-2">
+                    <label className="text-xs font-semibold text-blue-600 uppercase">Specific Address (Optional)</label>
+                    <input disabled={isView} type="text" value={specificAddress} onChange={(e) => setSpecificAddress(e.target.value)} placeholder="House/Block No., Street Name, Subdivision..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500" />
+                  </div>
+                )}
               </div>
 
               {!isView && (
@@ -354,7 +541,13 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date of Registration</label>
-                  <input disabled={isView} type="date" name="broker_date_of_reg" value={formData.broker_date_of_reg} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.broker_date_of_reg || ''}
+                    onChange={(e) => setFormData({...formData, broker_date_of_reg: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Place of Registration</label>
@@ -392,7 +585,13 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">PRC Validity</label>
-                  <input disabled={isView} type="date" name="sp_prc_reg_validity" value={formData.sp_prc_reg_validity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.sp_prc_reg_validity || ''}
+                    onChange={(e) => setFormData({...formData, sp_prc_reg_validity: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">SN Cert of Reg</label>
@@ -415,14 +614,26 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">OR Date</label>
-                  <input disabled={isView} type="date" name="or_date" value={formData.or_date} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.or_date || ''}
+                    onChange={(e) => setFormData({...formData, or_date: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Surety Bond Validity</label>
-                  <input disabled={isView} type="date" name="surety_bond_validity" value={formData.surety_bond_validity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.surety_bond_validity || ''}
+                    onChange={(e) => setFormData({...formData, surety_bond_validity: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">OR No. (Cash Bond)</label>
@@ -439,11 +650,23 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
                <div>
                   <label className="block text-sm font-medium text-gray-700">Date Filed</label>
-                  <input disabled={isView} type="date" name="date_filed" value={formData.date_filed} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.date_filed || ''}
+                    onChange={(e) => setFormData({...formData, date_filed: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date of Registration</label>
-                  <input disabled={isView} type="date" name="date_of_registration" value={formData.date_of_registration} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.date_of_registration || ''}
+                    onChange={(e) => setFormData({...formData, date_of_registration: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div className="flex items-center mt-6">
                   <input disabled={isView} type="checkbox" name="is_renewal" checked={formData.is_renewal} onChange={handleChange} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50" />
@@ -461,7 +684,13 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date Released</label>
-                  <input disabled={isView} type="date" name="date_released" value={formData.date_released} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500" />
+                  <input
+                    type="date"
+                    disabled={isView}
+                    value={formData.date_released || ''}
+                    onChange={(e) => setFormData({...formData, date_released: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 disabled:bg-slate-50 disabled:text-slate-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Released Month</label>
@@ -526,6 +755,30 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
             )}
           </div>
         </form>
+
+        {/* Custom Mini-Modal for Location Management */}
+        {actionModal.isOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+              <div className="p-6 border-b border-slate-100">
+                <h3 className="text-xl font-bold text-slate-800">{actionModal.title}</h3>
+              </div>
+              <div className="p-6">
+                {actionModal.type === 'add' ? (
+                  <input type="text" autoFocus value={modalInput} onChange={(e) => setModalInput(e.target.value)} placeholder="Enter name..." className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 text-slate-700" />
+                ) : (
+                  <p className="text-slate-600">Are you sure you want to delete <span className="font-bold text-red-600">{actionModal.targetName}</span>? This action cannot be undone.</p>
+                )}
+              </div>
+              <div className="p-4 bg-slate-50 flex justify-end gap-3">
+                <button onClick={() => setActionModal({...actionModal, isOpen: false})} disabled={isProcessing} className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50">Cancel</button>
+                <button onClick={async () => { setIsProcessing(true); try { await actionModal.actionFn(modalInput); setActionModal({...actionModal, isOpen: false}); } catch(e) { alert("Action failed. Check dependencies."); } finally { setIsProcessing(false); } }} disabled={isProcessing || (actionModal.type === 'add' && !modalInput.trim())} className={`px-5 py-2.5 rounded-xl font-semibold text-white transition-colors disabled:opacity-50 ${actionModal.type === 'add' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}`}>
+                  {isProcessing ? 'Processing...' : (actionModal.type === 'add' ? 'Save Location' : 'Yes, Delete')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

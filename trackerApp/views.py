@@ -5,11 +5,54 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils import timezone
 from rest_framework import viewsets, filters
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
-from .models import ProjectApplication, Salesperson
+from .models import (
+    ProjectApplication, Salesperson, Province, CityMunicipality, Barangay,
+    ProjectType, ApplicationType, ApplicationStatus, MainComplianceOption, CrlsOption
+)
+from .serializers import (
+    ProjectApplicationSerializer, SalespersonSerializer,
+    ProvinceSerializer, CityMunicipalitySerializer, BarangaySerializer,
+    ProjectTypeSerializer, ApplicationTypeSerializer, ApplicationStatusSerializer,
+    MainComplianceOptionSerializer, CrlsOptionSerializer
+)
+
+class ProvinceViewSet(viewsets.ModelViewSet):
+    queryset = Province.objects.all().order_by('name')
+    serializer_class = ProvinceSerializer
+    pagination_class = None
+
+class CityMunicipalityViewSet(viewsets.ModelViewSet):
+    queryset = CityMunicipality.objects.all().order_by('name')
+    serializer_class = CityMunicipalitySerializer
+    pagination_class = None
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        province_id = self.request.query_params.get('province')
+        if province_id:
+            queryset = queryset.filter(province_id=province_id)
+        return queryset
+
+class BarangayViewSet(viewsets.ModelViewSet):
+    queryset = Barangay.objects.all().order_by('name')
+    serializer_class = BarangaySerializer
+    pagination_class = None
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        city_id = self.request.query_params.get('city')
+        if city_id:
+            queryset = queryset.filter(city_id=city_id)
+        return queryset
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -29,6 +72,13 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return Response({"success": True})
+
+class CheckDriveConnectionView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        token_path = os.path.join(settings.BASE_DIR, 'token.pickle')
+        return Response({"is_connected": os.path.exists(token_path)})
+
 from .serializers import ProjectApplicationSerializer, SalespersonSerializer
 from .drive_service import upload_to_drive, get_connected_account, get_drive_service
 from django.http import JsonResponse
@@ -66,6 +116,7 @@ def connect_google_account(request):
         return Response({'status': 'warning', 'message': 'Google login was canceled or failed. Please try again.'}, status=400)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def google_connection_status(request):
     try:
         email = get_connected_account()
@@ -136,6 +187,7 @@ def get_csv_export_config():
     }
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def trigger_cloud_backup(request):
     raw_folder_name = request.data.get('folder_name', 'Automated_Backups')
     # SECURITY: Sanitize folder name to prevent injection or invalid characters
@@ -187,6 +239,7 @@ def trigger_cloud_backup(request):
             os.remove(filepath)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def reset_google_connection(request):
     try:
         # Resolve the full path correctly
@@ -246,6 +299,30 @@ class SalespersonViewSet(viewsets.ModelViewSet):
             is_archived = archived.lower() == 'true'
             if is_archived:
                 queryset = queryset.filter(date_archived__isnull=False)
-            else:
-                queryset = queryset.filter(date_archived__isnull=True)
         return queryset
+
+class ProjectTypeViewSet(viewsets.ModelViewSet):
+    queryset = ProjectType.objects.all().order_by('name')
+    serializer_class = ProjectTypeSerializer
+    pagination_class = None
+
+class ApplicationTypeViewSet(viewsets.ModelViewSet):
+    queryset = ApplicationType.objects.all().order_by('name')
+    serializer_class = ApplicationTypeSerializer
+    pagination_class = None
+
+class ApplicationStatusViewSet(viewsets.ModelViewSet):
+    queryset = ApplicationStatus.objects.all().order_by('name')
+    serializer_class = ApplicationStatusSerializer
+    pagination_class = None
+
+class MainComplianceOptionViewSet(viewsets.ModelViewSet):
+    queryset = MainComplianceOption.objects.all().order_by('name')
+    serializer_class = MainComplianceOptionSerializer
+    pagination_class = None
+
+class CrlsOptionViewSet(viewsets.ModelViewSet):
+    queryset = CrlsOption.objects.all().order_by('name')
+    serializer_class = CrlsOptionSerializer
+    pagination_class = None
+
