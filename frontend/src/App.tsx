@@ -5,7 +5,6 @@ import * as XLSX from 'xlsx';
 import { Toaster, toast } from 'react-hot-toast';
 
 import Sidebar from './components/Sidebar';
-import logo from './assets/DHSUD_LOGO.png';
 import ProjectFormModal from './components/ProjectFormModal';
 import SalespersonFormModal from './components/SalespersonFormModal';
 import Dashboard from './components/Dashboard';
@@ -58,7 +57,7 @@ const PrintReportModal = ({ data, onClose }: { data: Application[], onClose: () 
         </div>
 
         <div className="flex items-center justify-center gap-6 mb-8 border-b-4 border-slate-900 pb-6">
-          <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
+          <img src="/logo.png" alt="Logo" className="w-20 h-20 object-contain" />
           <div className="text-center">
             <h2 className="text-xl font-black uppercase text-slate-800 leading-tight">Republic of the Philippines</h2>
             <h1 className="text-2xl font-black uppercase text-slate-900 leading-tight">Department of Human Settlements and Urban Development</h1>
@@ -437,7 +436,7 @@ function AppContent() {
       {/* MOBILE HEADER */}
       <header className="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
         <div className="flex items-center gap-3 overflow-hidden">
-          <img src={logo} alt="Logo" className="w-8 h-8 object-contain shrink-0" />
+          <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
           <span className="font-black tracking-tight truncate text-lg">
             {getPageTitle()}
           </span>

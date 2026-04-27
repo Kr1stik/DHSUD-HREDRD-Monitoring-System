@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import logo from '../assets/DHSUD_LOGO.png';
 import {
   NavDashboardIcon, NavFolderIcon, NavArchiveIcon, NavAboutIcon,
   UsersIcon
@@ -48,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <aside className={`w-64 bg-slate-900/95 backdrop-blur-2xl border-r border-slate-800/50 shadow-2xl text-slate-300 flex flex-col fixed h-full z-[60] transition-transform duration-300 md:translate-x-0 print:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-slate-800/50 flex items-center gap-3">
-          <img src={logo} alt="Logo" className="w-10 h-10 object-contain shrink-0" />
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain shrink-0" />
           <div className="overflow-hidden">
             <h2 className="text-[10px] font-bold text-white uppercase tracking-widest leading-relaxed whitespace-normal">Housing and Real Estate Development Regulation Division</h2>
             <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider truncate">Negros Island Region</p>

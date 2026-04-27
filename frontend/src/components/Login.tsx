@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/DHSUD_LOGO.png';
 
 interface LoginProps {
   onLogin: (username: string) => void;
@@ -43,7 +42,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         {/* LEFT PANEL (The Form) */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white">
           <div className="mb-8">
-            <img src={logo} alt="DHSUD Logo" className="h-16 w-16 mb-4 object-contain" />
+            <img src="/logo.png" alt="DHSUD Logo" className="h-16 w-16 mb-4 object-contain" />
             <h1 className="text-xl font-bold text-slate-800 leading-tight">
               Department of Human Settlements and Urban Development (DHSUD)
             </h1>
