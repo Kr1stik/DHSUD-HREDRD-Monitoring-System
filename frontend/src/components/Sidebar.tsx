@@ -25,8 +25,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     try { 
       localStorage.removeItem('dhsud_session');
       localStorage.removeItem('google_cloud_linked');
-      const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
-      await axios.post(`${API_BASE_URL}/auth/logout/`); 
+      const isDev = import.meta.env.DEV;
+      const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
+      await axios.post(`${API_BASE_URL}/api/auth/logout/`); 
     } catch(e) { 
       console.error(e); 
     } finally { 

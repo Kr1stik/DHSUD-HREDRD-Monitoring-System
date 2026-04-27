@@ -1,0 +1,14 @@
+You are a Senior React Developer fixing a malformed double-API routing issue.
+
+FILES TO AUDIT:
+- Find the main Axios or Fetch configuration file (e.g., frontend/src/api/axios.ts, frontend/src/utils/api.js, etc.)
+
+REQUIRED ACTIONS:
+1. Locate where the `baseURL` is defined.
+2. We need to prevent the double `/api/api/` stacking. 
+3. Update the `baseURL` logic to strictly check if we are in development or production:
+   `const isDev = import.meta.env.DEV;`
+   `const baseURL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://[INSERT-YOUR-RENDER-URL-HERE]');`
+4. IMPORTANT: Remove any hardcoded `'/api'` from the baseURL string. Let the individual endpoints (like `/api/auth/login/`) handle that part.
+
+OUTPUT: Provide the updated API configuration code block.

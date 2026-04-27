@@ -5,8 +5,9 @@ import { CloseIcon } from './Icons';
 import { initialOptions, type Application } from '../utils/constants';
 
 // 🌐 API CONFIGURATION
-const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
-const API_URL = `${API_BASE_URL}/applications/`;
+const isDev = import.meta.env.DEV;
+const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
+const API_URL = `${API_BASE_URL}/api/applications/`;
 
 const ProjectFormModal = ({ 
   appToEdit, 
@@ -66,9 +67,9 @@ const ProjectFormModal = ({
   const fetchLocations = async () => {
     try {
       const [provRes, cityRes, brgyRes] = await Promise.all([ 
-        axios.get(`${API_BASE_URL}/provinces/`), 
-        axios.get(`${API_BASE_URL}/cities/`), 
-        axios.get(`${API_BASE_URL}/barangays/`) 
+        axios.get(`${API_BASE_URL}/api/provinces/`), 
+        axios.get(`${API_BASE_URL}/api/cities/`), 
+        axios.get(`${API_BASE_URL}/api/barangays/`) 
       ]);
       setProvinces(provRes.data?.results || provRes.data);
       setCities(cityRes.data?.results || cityRes.data);
@@ -122,9 +123,9 @@ const ProjectFormModal = ({
       type: 'add',
       title: `Add New ${type}`,
       actionFn: async (val) => {
-        if (type === 'Province') await axios.post(`${API_BASE_URL}/provinces/`, { name: val });
-        else if (type === 'City') await axios.post(`${API_BASE_URL}/cities/`, { name: val, province: formData.prov });
-        else if (type === 'Barangay') await axios.post(`${API_BASE_URL}/barangays/`, { name: val, city: formData.mun_city });
+        if (type === 'Province') await axios.post(`${API_BASE_URL}/api/provinces/`, { name: val });
+        else if (type === 'City') await axios.post(`${API_BASE_URL}/api/cities/`, { name: val, province: formData.prov });
+        else if (type === 'Barangay') await axios.post(`${API_BASE_URL}/api/barangays/`, { name: val, city: formData.mun_city });
         await fetchLocations();
         showNotification(`Added ${val}`, "success");
       }
@@ -145,13 +146,13 @@ const ProjectFormModal = ({
       targetName,
       actionFn: async () => {
         if (type === 'Province') {
-          await axios.delete(`${API_BASE_URL}/provinces/${valueId}/`);
+          await axios.delete(`${API_BASE_URL}/api/provinces/${valueId}/`);
           setFormData(p => ({ ...p, prov: '', mun_city: '', street_brgy: '' }));
         } else if (type === 'City') {
-          await axios.delete(`${API_BASE_URL}/cities/${valueId}/`);
+          await axios.delete(`${API_BASE_URL}/api/cities/${valueId}/`);
           setFormData(p => ({ ...p, mun_city: '', street_brgy: '' }));
         } else if (type === 'Barangay') {
-          await axios.delete(`${API_BASE_URL}/barangays/${valueId}/`);
+          await axios.delete(`${API_BASE_URL}/api/barangays/${valueId}/`);
           setFormData(p => ({ ...p, street_brgy: '' }));
         }
         await fetchLocations();

@@ -36,7 +36,8 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
 }) => {
   const location = useLocation();
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
+  const isDev = import.meta.env.DEV;
+  const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
 
   useEffect(() => {
     handleSearchChange('');
@@ -61,7 +62,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
     setCurrentPage(1);
   };
 
-  const fetchSalespersons = (url = `${API_BASE_URL}/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`) => {
+  const fetchSalespersons = (url = `${API_BASE_URL}/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`) => {
     setIsLoading(true);
     axios.get(url)
       .then(res => {
@@ -83,7 +84,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Archive Salesperson",
       "Move this record to archives?",
       () => {
-        axios.patch(`${API_BASE_URL}/salespersons/${id}/`, { date_archived: new Date().toISOString() })
+        axios.patch(`${API_BASE_URL}/api/salespersons/${id}/`, { date_archived: new Date().toISOString() })
           .then(() => {
             showNotification("Salesperson archived.", "success");
             fetchSalespersons();
@@ -100,7 +101,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Restore Salesperson",
       "Move this record back to active list?",
       () => {
-        axios.patch(`${API_BASE_URL}/salespersons/${id}/`, { date_archived: null })
+        axios.patch(`${API_BASE_URL}/api/salespersons/${id}/`, { date_archived: null })
           .then(() => {
             showNotification("Salesperson restored.", "success");
             fetchSalespersons();
@@ -117,7 +118,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Permanent Deletion",
       "Are you sure you want to permanently delete this record? This cannot be undone.",
       () => {
-        axios.delete(`${API_BASE_URL}/salespersons/${id}/`)
+        axios.delete(`${API_BASE_URL}/api/salespersons/${id}/`)
           .then(() => {
             showNotification("Salesperson permanently deleted.", "success");
             fetchSalespersons();

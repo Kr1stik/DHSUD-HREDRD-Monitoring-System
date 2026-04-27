@@ -17,8 +17,9 @@ import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
 // 🌐 API CONFIGURATION
-export const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
-const API_URL = `${API_BASE_URL}/applications/`;
+const isDev = import.meta.env.DEV;
+export const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
+const API_URL = `${API_BASE_URL}/api/applications/`;
 
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';

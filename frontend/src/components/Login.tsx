@@ -15,14 +15,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
+  const isDev = import.meta.env.DEV;
+  const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
   const APP_MODE = import.meta.env.VITE_APP_MODE || 'PRODUCTION';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login/`, { username, password });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login/`, { username, password });
       if (response.data.success) {
         toast.success('Welcome, Admin!', { duration: 5000 });
         localStorage.setItem('dhsud_session', 'active');
