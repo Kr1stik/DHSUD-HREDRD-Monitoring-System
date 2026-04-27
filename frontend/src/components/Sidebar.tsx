@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     try { 
       localStorage.removeItem('dhsud_session');
       localStorage.removeItem('google_cloud_linked');
-      const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+      const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
       await axios.post(`${API_BASE_URL}/auth/logout/`); 
     } catch(e) { 
       console.error(e); 

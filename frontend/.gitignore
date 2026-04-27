@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Google API Secrets
+token.pickle
+client_secret.json

@@ -17,10 +17,10 @@ import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
 // 🌐 API CONFIGURATION
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
 const API_URL = `${API_BASE_URL}/applications/`;
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;

@@ -74,7 +74,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
   const [modalInput, setModalInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
 
   const fetchLocations = async () => {
     try {

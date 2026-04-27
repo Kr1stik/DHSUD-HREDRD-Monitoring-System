@@ -1,0 +1,15 @@
+You are a Senior React Developer fixing a production API base URL issue.
+
+FILES TO AUDIT:
+- Find the main API configuration file (e.g., `frontend/src/api/axios.ts`, `frontend/src/services/api.js`, or wherever Axios/Fetch is initialized).
+
+REQUIRED ACTIONS:
+1. Locate the Axios instance creation or the global fetch base URL.
+2. Ensure the base URL strictly enforces the Vite environment variable for production, falling back to localhost ONLY if the variable is missing.
+3. Replace the baseURL configuration with exactly this logic:
+   `const baseURL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';`
+   `// If using Axios:`
+   `const api = axios.create({ baseURL: baseURL });`
+4. Ensure no trailing slashes are hardcoded in the baseURL that might double up with route paths.
+
+OUTPUT: Provide the updated API configuration code block.
