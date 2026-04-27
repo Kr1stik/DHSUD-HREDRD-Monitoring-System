@@ -1,0 +1,21 @@
+You are a Senior UI Developer implementing smart empty states for data tables.
+
+FILES TO AUDIT:
+- frontend/src/components/SalespersonRegistry.tsx
+- frontend/src/components/ProjectRegistry.tsx
+
+REQUIRED ACTIONS:
+1. Locate the empty state rendering logic (where it currently says "No Matches Found").
+2. Check the condition of the search input (e.g., `searchQuery`, `searchTerm`, or similar state).
+3. IF the database/list is empty AND the search term is empty:
+   - Render a "No Records Found" state.
+   - Use an `Inbox` or `FolderOpen` icon from lucide-react.
+   - Title: "No Records Found"
+   - Subtitle: "There are currently no records registered in the system."
+4. IF the database/list is empty AND the search term is NOT empty:
+   - Render the "No Matches Found" state.
+   - Use a `SearchX` or `Search` icon.
+   - Title: "No Matches Found"
+   - Subtitle: `We couldn't find any matches for "${searchTerm}". Try a different term.`
+
+OUTPUT: Provide the updated empty state conditional rendering blocks for both files.

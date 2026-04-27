@@ -142,6 +142,7 @@ class Salesperson(models.Model):
 
     # Application Type
     is_renewal = models.BooleanField(default=False)
+    renewal_date = models.DateField(null=True, blank=True)
 
     # Valid Years
     valid_years = models.JSONField(default=list, blank=True, null=True)

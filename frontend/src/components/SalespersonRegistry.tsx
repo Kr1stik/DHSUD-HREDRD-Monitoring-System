@@ -15,6 +15,8 @@ interface Salesperson {
   city_municipality: string;
   province: string;
   date_archived: string | null;
+  is_renewal: boolean;
+  renewal_date: string | null;
 }
 
 interface SalespersonRegistryProps {
@@ -184,13 +186,14 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">PRN / PRC No</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Contact</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Location</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100">Renewal</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 text-center no-print">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
+                  <td colSpan={6} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
                       <p className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading records...</p>
@@ -199,9 +202,25 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
                 </tr>
               ) : salespersons.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
-                    <div className="max-w-xs mx-auto space-y-3">
-                       <p className="text-slate-800 font-black uppercase tracking-widest text-sm">No salespersons found</p>
+                  <td colSpan={6} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-4 py-10">
+                      <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-[24px] flex items-center justify-center mb-2">
+                        {searchTerm ? (
+                          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        ) : (
+                          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-bold text-slate-800">{searchTerm ? "No Matches Found" : "No Records Found"}</h3>
+                        <p className="text-slate-500 font-medium max-w-sm mx-auto">
+                          {searchTerm ? (
+                            <>We couldn't find any matches for '<span className="text-blue-600 font-black">{searchTerm}</span>'. Try a different term.</>
+                          ) : (
+                            "There are currently no records registered in the system."
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -227,6 +246,12 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
                     <td className="px-6 py-4">
                       <div className="font-bold text-slate-600 text-sm">{sp.city_municipality}</div>
                       <div className="text-[10px] font-bold text-slate-600 uppercase">{sp.province}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-600 text-sm">{sp.is_renewal ? 'RENEWAL' : 'NEW'}</div>
+                      {sp.is_renewal && sp.renewal_date && (
+                        <div className="text-[10px] font-bold text-slate-500 uppercase mt-0.5 tracking-tighter">Date: {sp.renewal_date}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 no-print" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-2">

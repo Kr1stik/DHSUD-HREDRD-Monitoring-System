@@ -66,35 +66,12 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in print:bg-white print:p-0">
-      <div className="flex flex-col-reverse md:flex-row md:items-center justify-between gap-4 print:hidden">
-        <h1 className="text-2xl font-bold text-slate-800">{currentView === 'active' ? 'Project Registry' : 'Archives'}</h1>
-        <div className="flex items-center gap-2">
-            {isBulkMode && (
-              <button 
-                onClick={() => selectedItems.length === paginatedApps.length ? setSelectedItems([]) : setSelectedItems(paginatedApps.map(app => app.id))} 
-                className="md:hidden px-3 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs"
-              >
-                {selectedItems.length === paginatedApps.length ? 'Deselect All' : 'Select All'}
-              </button>
-            )}
-            <button onClick={() => setIsBulkMode(!isBulkMode)} className={`p-2.5 rounded-xl border transition-all ${isBulkMode ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 text-slate-600'}`}><BulkIcon /></button>
-            {currentView === 'active' && (
-              <>
-                <button onClick={() => setShowReport(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
-                  <PrinterIcon />
-                  Print Report
-                </button>
-                <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base">+ New Project</button>
-              </>
-            )}
-            
-        </div>
-      </div>
-
-      <div className="flex gap-3 print:hidden">
-        <div className="relative flex-1 bg-white/50 border border-slate-200 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-          <span className="absolute inset-y-0 left-4 flex items-center"><SearchIcon /></span>
-          <input type="text" placeholder="Search projects..." className="w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
+        <div>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">{currentView === 'active' ? 'Project Registry' : 'Archives'}</h1>
+          <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-1">
+             {currentView === 'active' ? 'Active Compliance Tracking' : 'Archived Records'}
+          </p>
         </div>
       </div>
 
@@ -126,6 +103,44 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
       )}
 
       <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-4 md:p-8 overflow-hidden w-full max-w-full print:bg-white print:shadow-none print:border-0 print:p-0">
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50 -mx-4 md:-mx-8 -mt-4 md:-mt-8 mb-8 no-print">
+          <div className="relative w-full sm:w-96 bg-white border border-slate-200 shadow-sm rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <SearchIcon />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search projects..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-12 pr-4 py-3 bg-transparent leading-5 placeholder-slate-400 focus:outline-none transition-all font-bold text-slate-700"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            {isBulkMode && (
+              <button 
+                onClick={() => selectedItems.length === paginatedApps.length ? setSelectedItems([]) : setSelectedItems(paginatedApps.map(app => app.id))} 
+                className="md:hidden px-3 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs"
+              >
+                {selectedItems.length === paginatedApps.length ? 'Deselect All' : 'Select All'}
+              </button>
+            )}
+            <button onClick={() => setIsBulkMode(!isBulkMode)} className={`p-2.5 rounded-xl border transition-all ${isBulkMode ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`} title="Bulk Actions">
+              <BulkIcon />
+            </button>
+            {currentView === 'active' && (
+              <>
+                <button onClick={() => setShowReport(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
+                  <PrinterIcon /> Print Report
+                </button>
+                <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 text-sm">
+                  + New Project
+                </button>
+              </>
+            )}
+          </div>
+        </div>
         {isLoading ? (
           <div className="px-6 py-20 text-center">
             <div className="flex flex-col items-center gap-4">
@@ -135,8 +150,15 @@ const ProjectRegistry: React.FC<ProjectRegistryProps> = ({
           </div>
         ) : paginatedApps.length === 0 ? (
           <EmptyState 
-            title={searchTerm ? "No Matches Found" : "Registry is Empty"} 
-            message={searchTerm ? `We couldn't find any projects matching "${searchTerm}". Try a different term.` : `There are no ${currentView} projects to display right now.`}
+            title={searchTerm ? "No Matches Found" : "No Records Found"} 
+            message={searchTerm 
+              ? `We couldn't find any matches for "${searchTerm}". Try a different term.` 
+              : `There are currently no records registered in the system.`}
+            icon={searchTerm ? (
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            ) : (
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+            )}
             action={!searchTerm && currentView === 'active' && (
               <button onClick={() => { setEditingApp(null); setIsModalOpen(true); }} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">+ Add Your First Project</button>
             )}
