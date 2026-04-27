@@ -16,7 +16,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const isDev = import.meta.env.DEV;
-  const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
+  const rawUrl = import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com';
+  const cleanBaseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+  const API_BASE_URL = isDev ? 'http://localhost:8000' : cleanBaseUrl;
   const APP_MODE = import.meta.env.VITE_APP_MODE || 'PRODUCTION';
 
   const handleSubmit = async (e: React.FormEvent) => {

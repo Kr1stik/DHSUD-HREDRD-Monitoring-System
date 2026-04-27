@@ -29,7 +29,10 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:8000';
+  const isDev = import.meta.env.DEV;
+  const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const cleanBaseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+  const API_BASE_URL = isDev ? 'http://localhost:8000' : cleanBaseUrl;
   
   // 🔄 CONNECTION STATES
   const [isDriveConnected, setIsDriveConnected] = useState(false);

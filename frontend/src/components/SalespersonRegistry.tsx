@@ -37,7 +37,9 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
   const location = useLocation();
 
   const isDev = import.meta.env.DEV;
-  const API_BASE_URL = isDev ? 'http://localhost:8000' : (import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com');
+  const rawUrl = import.meta.env.VITE_API_URL || 'https://dhsud-hredrd-monitoring-system.onrender.com';
+  const cleanBaseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+  const API_BASE_URL = isDev ? 'http://localhost:8000' : cleanBaseUrl;
 
   useEffect(() => {
     handleSearchChange('');

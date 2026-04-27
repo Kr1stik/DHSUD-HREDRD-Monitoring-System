@@ -1,0 +1,17 @@
+You are a Senior React Developer fixing a compounding double/triple API routing bug.
+
+FILES TO AUDIT:
+- Find the Axios/Fetch global config (e.g., frontend/src/api/axios.ts or similar).
+- Find the Login component where the auth request is made (e.g., frontend/src/components/Login.tsx or frontend/src/features/auth/api.ts).
+
+REQUIRED ACTIONS:
+1. In the Axios/Fetch config:
+   - Define the base URL. If using VITE_API_URL, explicitly strip any trailing slashes or '/api' from the end of the environment variable.
+   - Example logic: 
+     `const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';`
+     `const cleanBaseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');`
+     `const baseURL = import.meta.env.DEV ? 'http://localhost:8000' : cleanBaseUrl;`
+2. In the API call itself (Login component or auth service):
+   - Ensure the POST request string is exactly: `'/api/auth/login/'` (with the leading slash so it overrides rather than appends).
+
+OUTPUT: Provide the updated code for both the API config and the Login function.
