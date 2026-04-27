@@ -17,12 +17,13 @@ import { PrinterIcon, MenuIcon, CloseIcon } from './components/Icons';
 import { type Application } from './utils/constants';
 
 // 🌐 API CONFIGURATION
-const API_URL = '/api/applications/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = `${API_BASE_URL}/applications/`;
 
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = window.location.origin;
 
 
 // ==========================================
@@ -173,7 +174,7 @@ function AppContent() {
 
   const checkGoogleStatus = () => {
     setIsCheckingStatus(true);
-    axios.get('/api/google-status/')
+    axios.get(`${API_BASE_URL}/google-status/`)
       .then(res => {
         if (res.data.connected) setConnectedEmail(res.data.email);
         else setConnectedEmail(null);
@@ -199,7 +200,7 @@ function AppContent() {
   }
 
   const fetchDashboardStats = () => {
-    axios.get('/api/dashboard-stats/')
+    axios.get(`${API_BASE_URL}/dashboard-stats/`)
       .then(res => setDashboardStats(res.data))
       .catch(() => console.error("Failed to load dashboard stats"));
   };
@@ -233,7 +234,7 @@ function AppContent() {
   const handleCloudSync = async () => {
     const performSync = () => {
       setIsSyncing(true);
-      axios.post('/api/backup/', { folder_name: syncFolder || 'Manual_Backups' })
+      axios.post(`${API_BASE_URL}/backup/`, { folder_name: syncFolder || 'Manual_Backups' })
         .then((res) => { 
           showNotification(res.data.message || "Backup successfully uploaded to Google Drive!", "success"); 
           setSyncFolder(''); 
@@ -342,7 +343,7 @@ function AppContent() {
       async () => {
         setIsLoading(true);
         try {
-          await axios.post('/api/projects/bulk-action/', { action, ids: selectedItems });
+          await axios.post(`${API_BASE_URL}/projects/bulk-action/`, { action, ids: selectedItems });
           
           showNotification(`Successfully ${action}d ${selectedItems.length} items.`, "success");
           setSelectedItems([]);

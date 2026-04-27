@@ -74,12 +74,14 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
   const [modalInput, setModalInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
   const fetchLocations = async () => {
     try {
       const [provRes, cityRes, brgyRes] = await Promise.all([ 
-        axios.get('/api/provinces/'), 
-        axios.get('/api/cities/'), 
-        axios.get('/api/barangays/') 
+        axios.get(`${API_BASE_URL}/provinces/`), 
+        axios.get(`${API_BASE_URL}/cities/`), 
+        axios.get(`${API_BASE_URL}/barangays/`) 
       ]);
       setProvinces(provRes.data?.results || provRes.data);
       setCities(cityRes.data?.results || cityRes.data);
@@ -100,7 +102,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       type: 'add', 
       title: 'Add New Province', 
       actionFn: async (val) => { 
-        await axios.post('/api/provinces/', {name: val}); 
+        await axios.post(`${API_BASE_URL}/provinces/`, {name: val}); 
         await fetchLocations(); 
       } 
     }); 
@@ -115,7 +117,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       title: 'Delete Province', 
       targetName: prov?.name, 
       actionFn: async () => { 
-        await axios.delete(`/api/provinces/${selectedProvince}/`); 
+        await axios.delete(`${API_BASE_URL}/provinces/${selectedProvince}/`); 
         setSelectedProvince(""); 
         await fetchLocations(); 
       } 
@@ -130,7 +132,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       type: 'add', 
       title: 'Add New City', 
       actionFn: async (val) => { 
-        await axios.post('/api/cities/', {name: val, province: selectedProvince}); 
+        await axios.post(`${API_BASE_URL}/cities/`, {name: val, province: selectedProvince}); 
         await fetchLocations(); 
       } 
     }); 
@@ -145,7 +147,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       title: 'Delete City', 
       targetName: city?.name, 
       actionFn: async () => { 
-        await axios.delete(`/api/cities/${selectedCity}/`); 
+        await axios.delete(`${API_BASE_URL}/cities/${selectedCity}/`); 
         setSelectedCity(""); 
         await fetchLocations(); 
       } 
@@ -160,7 +162,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       type: 'add', 
       title: 'Add New Barangay', 
       actionFn: async (val) => { 
-        await axios.post('/api/barangays/', {name: val, city: selectedCity}); 
+        await axios.post(`${API_BASE_URL}/barangays/`, {name: val, city: selectedCity}); 
         await fetchLocations(); 
       } 
     }); 
@@ -175,7 +177,7 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
       title: 'Delete Barangay', 
       targetName: brgy?.name, 
       actionFn: async () => { 
-        await axios.delete(`/api/barangays/${selectedBrgy}/`); 
+        await axios.delete(`${API_BASE_URL}/barangays/${selectedBrgy}/`); 
         setSelectedBrgy(""); 
         await fetchLocations(); 
       } 
@@ -349,8 +351,8 @@ const SalespersonFormModal: React.FC<SalespersonFormModalProps> = ({
 
     try {
       const url = mode === 'edit' && salesperson?.id 
-        ? `/api/salespersons/${salesperson.id}/` 
-        : '/api/salespersons/';
+        ? `${API_BASE_URL}/salespersons/${salesperson.id}/` 
+        : `${API_BASE_URL}/salespersons/`;
       
       const response = await fetch(url, {
         method: mode === 'edit' ? 'PATCH' : 'POST',

@@ -36,6 +36,8 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
 }) => {
   const location = useLocation();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
   useEffect(() => {
     handleSearchChange('');
   }, [location.pathname, isArchiveMode]);
@@ -59,7 +61,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
     setCurrentPage(1);
   };
 
-  const fetchSalespersons = (url = `/api/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`) => {
+  const fetchSalespersons = (url = `${API_BASE_URL}/salespersons/?search=${searchTerm}&archived=${isArchiveMode}&page=${currentPage}`) => {
     setIsLoading(true);
     axios.get(url)
       .then(res => {
@@ -81,7 +83,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Archive Salesperson",
       "Move this record to archives?",
       () => {
-        axios.patch(`/api/salespersons/${id}/`, { date_archived: new Date().toISOString() })
+        axios.patch(`${API_BASE_URL}/salespersons/${id}/`, { date_archived: new Date().toISOString() })
           .then(() => {
             showNotification("Salesperson archived.", "success");
             fetchSalespersons();
@@ -98,7 +100,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Restore Salesperson",
       "Move this record back to active list?",
       () => {
-        axios.patch(`/api/salespersons/${id}/`, { date_archived: null })
+        axios.patch(`${API_BASE_URL}/salespersons/${id}/`, { date_archived: null })
           .then(() => {
             showNotification("Salesperson restored.", "success");
             fetchSalespersons();
@@ -115,7 +117,7 @@ const SalespersonRegistry: React.FC<SalespersonRegistryProps> = ({
       "Permanent Deletion",
       "Are you sure you want to permanently delete this record? This cannot be undone.",
       () => {
-        axios.delete(`/api/salespersons/${id}/`)
+        axios.delete(`${API_BASE_URL}/salespersons/${id}/`)
           .then(() => {
             showNotification("Salesperson permanently deleted.", "success");
             fetchSalespersons();

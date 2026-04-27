@@ -1,0 +1,15 @@
+You are a Senior React Developer fixing a broken Tailwind CSS configuration where styles have completely disappeared from the UI.
+
+FILES TO AUDIT:
+- frontend/src/main.tsx (or .jsx)
+- frontend/src/index.css
+- frontend/tailwind.config.js (or .ts)
+- frontend/postcss.config.js (or .cjs)
+
+REQUIRED ACTIONS:
+1. main.tsx: Check the imports at the very top. You MUST ensure `import './index.css';` is present so Vite compiles the Tailwind directives.
+2. index.css: Ensure the top of the file contains the three core Tailwind directives: `@tailwind base;`, `@tailwind components;`, and `@tailwind utilities;`.
+3. tailwind.config.js: Verify the `content` array. It MUST contain paths to scan the React files, specifically `"./index.html"` and `"./src/**/*.{js,ts,jsx,tsx}"`.
+4. postcss.config.js: Ensure the `plugins` object contains both `tailwindcss: {},` and `autoprefixer: {},`.
+
+OUTPUT: Identify which file(s) were missing the required connections and provide the corrected code blocks for only the files that needed fixing.

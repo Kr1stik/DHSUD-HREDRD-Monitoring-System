@@ -28,6 +28,8 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
 }) => {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
   
   // 🔄 CONNECTION STATES
   const [isDriveConnected, setIsDriveConnected] = useState(false);
@@ -38,7 +40,7 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await axios.get('/api/drive-status/');
+        const res = await axios.get(`${API_BASE_URL}/drive-status/`);
         setIsDriveConnected(res.data.is_connected);
       } catch (err) {
         setIsDriveConnected(false);
@@ -54,7 +56,7 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
       "Switch Google Account", 
       "This will disconnect the current Google Drive account. The next sync will require a new login. Continue?", 
       () => {
-        axios.post('/api/reset-google/')
+        axios.post(`${API_BASE_URL}/reset-google/`)
           .then(res => {
             setConnectedEmail(null);
             setIsDriveConnected(false);
@@ -75,7 +77,7 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
     formData.append('folder_name', syncFolder || 'Manual_Uploads');
 
     try {
-      const res = await axios.post('/api/upload-drive/', formData, {
+      const res = await axios.post(`${API_BASE_URL}/upload-drive/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       showNotification(res.data.message || "File uploaded successfully!", "success");
@@ -162,7 +164,7 @@ const CloudBackup: React.FC<CloudBackupProps> = ({
                 if (!isDriveConnected) {
                   // 🔌 DIRECT CONNECT (Bypass Modal)
                   showNotification("Opening Google Login window...", "info");
-                  axios.post('/api/connect-google/')
+                  axios.post(`${API_BASE_URL}/connect-google/`)
                     .then(res => {
                       setConnectedEmail(res.data.email);
                       setIsDriveConnected(true);

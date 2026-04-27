@@ -17,3 +17,7 @@ __pycache__/
 # Node Modules (Frontend)
 frontend/node_modules/
 frontend/dist/
+
+# Google API Secrets
+token.pickle
+client_secret.json

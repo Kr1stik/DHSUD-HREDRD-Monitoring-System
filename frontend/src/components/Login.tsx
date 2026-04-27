@@ -15,11 +15,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+  const APP_MODE = import.meta.env.VITE_APP_MODE || 'PRODUCTION';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/login/', { username, password });
+      const response = await axios.post(`${API_BASE_URL}/auth/login/`, { username, password });
       if (response.data.success) {
         toast.success('Welcome, Admin!', { duration: 5000 });
         localStorage.setItem('dhsud_session', 'active');
@@ -41,7 +44,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         {/* LEFT PANEL (The Form) */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white">
-          <span className="inline-block bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-1 rounded-full mb-4 w-max shadow-sm">UAT / BETA MODE</span>
+          <span className={`inline-block ${APP_MODE === 'PRODUCTION' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-red-100 text-red-700 border-red-200'} border text-xs font-bold px-3 py-1 rounded-full mb-4 w-max shadow-sm`}>
+            {APP_MODE === 'PRODUCTION' ? 'OFFICIAL SYSTEM' : 'UAT / BETA MODE'}
+          </span>
           <div className="mb-8">
             <img src="/logo.png" alt="DHSUD Logo" className="h-16 w-16 mb-4 object-contain" />
             <h1 className="text-xl font-bold text-slate-800 leading-tight">

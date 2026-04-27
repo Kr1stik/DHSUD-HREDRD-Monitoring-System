@@ -25,7 +25,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     try { 
       localStorage.removeItem('dhsud_session');
       localStorage.removeItem('google_cloud_linked');
-      await axios.post('/api/auth/logout/'); 
+      const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+      await axios.post(`${API_BASE_URL}/auth/logout/`); 
     } catch(e) { 
       console.error(e); 
     } finally { 
@@ -45,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         ></div>
       )}
 
-      <aside className={`w-64 bg-slate-900/95 backdrop-blur-2xl border-r border-slate-800/50 shadow-2xl text-slate-300 flex flex-col fixed h-full z-[60] transition-transform duration-300 md:translate-x-0 print:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`w-64 bg-slate-900/95 backdrop-blur-2xl border-r border-slate-800/50 shadow-2xl text-slate-300 flex flex-col fixed h-full z-[60] transition-transform duration-300 md:translate-x-0 print:hidden overflow-y-auto ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-slate-800/50 flex items-center gap-3">
           <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain shrink-0" />
           <div className="overflow-hidden">
@@ -54,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
         
-        <nav className="flex-1 px-4 space-y-1.5 mt-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <nav className="flex-1 px-4 space-y-1.5 mt-6">
           <p className="px-5 pt-4 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Overview</p>
           <button onClick={() => { navigate('/dashboard'); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${isActive('/dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-slate-800/50'}`}>
             <NavDashboardIcon /> Dashboard

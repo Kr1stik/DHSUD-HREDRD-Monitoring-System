@@ -1,0 +1,13 @@
+You are a Senior React Developer restoring a local development proxy.
+
+FILES TO AUDIT:
+- frontend/vite.config.ts (or .js)
+
+REQUIRED ACTIONS:
+1. Inside the `defineConfig` object, add a new `server` block.
+2. Inside `server`, add a `proxy` configuration.
+3. Catch any requests starting with `/api` and forward them to `http://localhost:8000`. (e.g., `'/api': 'http://localhost:8000'`).
+4. Ensure you DO NOT add a `base: '/static/'` property (keep the Vercel fix intact).
+5. Keep the `plugins` and `build` blocks exactly as they are.
+
+OUTPUT: Provide the updated vite.config file.
