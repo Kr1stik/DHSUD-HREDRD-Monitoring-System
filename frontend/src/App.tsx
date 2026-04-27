@@ -794,7 +794,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/HREDRD">
+    <BrowserRouter>
       <FloatingHelp />
       <AppContent />
     </BrowserRouter>

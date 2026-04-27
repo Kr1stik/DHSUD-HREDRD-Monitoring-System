@@ -1,0 +1,12 @@
+You are a Senior React Developer fixing a routing issue for a Vercel deployment.
+
+FILES TO AUDIT:
+- frontend/src/App.tsx (or wherever <BrowserRouter> is located)
+
+REQUIRED ACTIONS:
+1. Locate the `<BrowserRouter>` component wrapping the application.
+2. It currently has a prop: `basename="/HREDRD"`.
+3. Completely remove the `basename` prop.
+4. The line should just say `<BrowserRouter>`.
+
+OUTPUT: Provide the updated App component block.
