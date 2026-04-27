@@ -422,19 +422,26 @@ function AppContent() {
 
   if (!currentUser) {
     return (
-      <>
+      <div className="flex flex-col min-h-screen">
+        <div className="w-full bg-red-600 text-white text-center text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] py-1.5 z-[9999] sticky top-0 shadow-md">
+          Beta Testing Environment — Do Not Upload Sensitive Government Data
+        </div>
         <Toaster position="top-right" />
         <Login onLogin={setCurrentUser} />
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 relative overflow-x-hidden">
-      <Toaster position="top-right" />
-      
-      {/* MOBILE HEADER */}
-      <header className="md:hidden fixed top-0 w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
+    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800 relative">
+      <div className="w-full bg-red-600 text-white text-center text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] py-1.5 z-[9999] sticky top-0 shadow-md">
+        Beta Testing Environment — Do Not Upload Sensitive Government Data
+      </div>
+      <div className="flex flex-1 relative">
+        <Toaster position="top-right" />
+        
+        {/* MOBILE HEADER */}
+      <header className="md:hidden fixed top-[28px] sm:top-[32px] w-full h-16 bg-slate-900 text-white px-4 flex justify-between items-center z-[50] shadow-md">
         <div className="flex items-center gap-3 overflow-hidden">
           <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
           <span className="font-black tracking-tight truncate text-lg">
@@ -780,8 +787,9 @@ function AppContent() {
         />
       )}
 
+      </div>
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -790,5 +798,5 @@ export default function App() {
       <FloatingHelp />
       <AppContent />
     </BrowserRouter>
-  )
+  );
 }

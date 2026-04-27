@@ -1,0 +1,15 @@
+You are a Senior UI Developer adding a global Beta Testing warning banner to a React application.
+
+FILES TO AUDIT:
+- frontend/src/App.tsx (or your main Layout component that wraps the whole app)
+- frontend/src/components/Login.tsx
+
+REQUIRED ACTIONS:
+1. GLOBAL BANNER (App.tsx / Layout):
+   - Inject a full-width banner at the very top of the application layout, above the Navbar or Sidebar.
+   - Use this JSX: `<div className="w-full bg-red-600 text-white text-center text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] py-1.5 z-[9999] relative shadow-md">Beta Testing Environment — Do Not Upload Sensitive Government Data</div>`
+2. LOGIN BADGE (Login.tsx):
+   - In the left panel (the form side), right above the "Sign In" title, add a small, distinct badge.
+   - Use this JSX: `<span className="inline-block bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-1 rounded-full mb-4 w-max shadow-sm">UAT / BETA MODE</span>`
+
+OUTPUT: Provide the updated JSX structures for both the main layout and the login component.

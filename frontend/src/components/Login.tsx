@@ -41,6 +41,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         {/* LEFT PANEL (The Form) */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white">
+          <span className="inline-block bg-red-100 text-red-700 border border-red-200 text-xs font-bold px-3 py-1 rounded-full mb-4 w-max shadow-sm">UAT / BETA MODE</span>
           <div className="mb-8">
             <img src="/logo.png" alt="DHSUD Logo" className="h-16 w-16 mb-4 object-contain" />
             <h1 className="text-xl font-bold text-slate-800 leading-tight">
